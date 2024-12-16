@@ -5,7 +5,7 @@ import { DB } from '@database';
 import sequelize,{Op} from 'sequelize';
 
 export class CronJobService {
-
+    
     public handlingEmail = Container.get(EmailService);
     private allUserCount: any;
     private allPostActive: any;
