@@ -1,7 +1,6 @@
 import Container from 'typedi';
 import cron from 'node-cron';
 import { EmailService } from '@services/ email.service';
-import { User } from '@interfaces/users.interface';
 import { DB } from '@database';
 import sequelize,{Op} from 'sequelize';
 
