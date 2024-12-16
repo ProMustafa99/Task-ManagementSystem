@@ -6,6 +6,7 @@ import UserModel from '@models/users.model';
 import PostModel from '@models/post.model';
 import UserPermissionModel from '@/models/userPermission.model';
 import TaskTypeModel from '@/models/taskType.model';
+import TaskModel  from '@/models/task.module';
 
 
 const sequelize = new Sequelize.Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
@@ -37,6 +38,7 @@ export const DB = {
   Posts: PostModel(sequelize),
   UserPermission: UserPermissionModel(sequelize),
   TaskType: TaskTypeModel(sequelize),
+  Task : TaskModel(sequelize),
   sequelize, // connection instance (RAW queries)
   Sequelize, // library
 };
