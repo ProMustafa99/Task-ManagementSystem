@@ -1,4 +1,5 @@
 import { Task } from "@/interfaces/task.interface";
+import { DATE } from "sequelize";
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
 
 // Define creation attributes
@@ -7,6 +8,7 @@ export type TaskCreationAttributes = Optional<Task, 'id'>;
 export class TaskModel extends Model<Task, TaskCreationAttributes> implements Task {
     id?: number;
     type: number;
+    title: string;
     parent_table: string;
     parent_id: number;
     assignee: number;
@@ -24,6 +26,10 @@ export default function (sequelize: Sequelize): typeof TaskModel {
         type: {
             type: DataTypes.INTEGER,  
             allowNull: true,
+        },
+        title:{
+            type:DataTypes.STRING,
+            allowNull:false
         },
         parent_table: {
             type: DataTypes.STRING,

@@ -40,6 +40,7 @@ export default function (sequelize: Sequelize): typeof PostModel {
         state_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            defaultValue:101
         },
         created_by: {
             type: DataTypes.INTEGER,

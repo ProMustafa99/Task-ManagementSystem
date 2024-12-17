@@ -70,4 +70,13 @@ export class Postcotroller {
             next(error);
         }
     };
+
+    public activatePost = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+            const PostId = Number(req.params.id);
+            
+        }catch(error) {
+            next(error);
+        }
+    }
 }

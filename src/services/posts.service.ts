@@ -5,6 +5,8 @@ import { Post } from "@/interfaces/post.interface";
 import { HttpException } from '@/exceptions/httpException';
 import { CreatePostDto, UpdatePostDto } from '@/dtos/posts.dto';
 import sequelize from 'sequelize';
+import { TaskService } from './task.service';
+import { Container } from 'typedi';
 
 
 @Service()
@@ -17,7 +19,7 @@ export class PostService {
             offset: offset,
             limit: 5,
         });
-        
+
 
         return allPost;
     }
@@ -28,7 +30,13 @@ export class PostService {
     }
 
     public async createPost(postData: CreatePostDto): Promise<Post> {
+
         const createpost: Post = await DB.Posts.create({ ...postData });
+        const taskService = Container.get(TaskService);
+        const taskCount = await taskService.fetchTaskCount();
+        console.error(`Total tasks: ${taskCount}`);
+
+        await taskService.createNewTask(createpost,"post",67);
         return createpost;
     }
 
@@ -45,6 +53,14 @@ export class PostService {
     public async updatePost(postId: number, PostData: UpdatePostDto): Promise<number> {
         const [updatedUser] = await DB.Posts.update({ ...PostData }, { where: { id: postId } });
         return updatedUser;
+    }
+
+    public async activatedPost() {
+
+        const findAllPostsUnactive = await DB.Posts.findAll({
+            where : {state_id:101}
+        });
+        return findAllPostsUnactive;
     }
 }
 
