@@ -51,11 +51,11 @@ export class PostService {
     }
 
     public async updatePost(postId: number, PostData: UpdatePostDto): Promise<number> {
+        
         const [updatedPost] = await DB.Posts.update({ ...PostData }, { where: { id: postId } });
         const findPost = await DB.Posts.findByPk(postId);
 
         if (PostData.state_id === 300) {
-            console.error(PostData);
             setTimeout(async ()=>{
                 await this.taskService.createNewTask(2,findPost, "post");
             }, 2000);
