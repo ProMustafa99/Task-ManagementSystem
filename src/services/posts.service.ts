@@ -35,7 +35,7 @@ export class PostService {
 
         const createpost: Post = await DB.Posts.create({ ...postData });
         const taskCount = await this.taskService.fetchTaskCount();
-        await this.taskService.createNewTask(createpost, "post", 67,"Active Post");
+        await this.taskService.createNewTask(1, createpost, "post");
 
         return createpost;
     }
@@ -50,16 +50,18 @@ export class PostService {
         return deletepost;
     }
 
-    public async updatePost(postId: number, PostData: UpdatePostDto): Promise<number> {
-        
-        const [updatedPost] = await DB.Posts.update({ ...PostData }, { where: { id: postId } });
+    public async updatePost(postId: number, postData: UpdatePostDto): Promise<number> {
+
+        const [updatedPost] = await DB.Posts.update({ ...postData }, { where: { id: postId } });
         const findPost = await DB.Posts.findByPk(postId);
 
-        if (PostData.state_id === 300) {
-            setTimeout(async ()=>{
-                await this.taskService.createNewTask(2,findPost, "post");
-            }, 2000);
+        if (postData.state_id === 300) {
+            this.taskService.markTaskAsDone(postId);
+            setTimeout(async () => {
+                await this.taskService.createNewTask(2, findPost, "post");
+            }, 60 * 60 * 1000);
         }
+
         return updatedPost;
     }
 }

@@ -3,6 +3,7 @@ export interface Task {
     type:number;
     parent_table:string;
     parent_id:number;
+    status_id:number;
     assignee:number;
     created_at:Date;
 };

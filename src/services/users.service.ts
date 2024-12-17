@@ -5,6 +5,8 @@ import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@/exceptions/httpException';
 import { User } from '@interfaces/users.interface';
 import { Op } from 'sequelize';
+import { Container } from 'typedi';
+import { TaskService } from './task.service';
 
 @Service()
 export class UserService {
@@ -33,12 +35,20 @@ export class UserService {
   }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
+    const taskService = Container.get(TaskService);
+
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: User = await DB.Users.create({ ...userData, password: hashedPassword });
+
+    if (createUserData.user_type != 2) {
+      await taskService.createNewTask(3, createUserData, "user");
+    }
+
     return createUserData;
+
   }
 
   public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {

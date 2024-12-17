@@ -15,6 +15,8 @@ export class TaskRoute implements Routes {
 
   private initializeRoutes() {
     this.router.get(`${this.path}`, AuthMiddleware, Authorization(52), this.task.getAllTask);
+    this.router.patch(`${this.path}/:id(\\d+)`, AuthMiddleware,this.task.markTaskAsDone);
+    this.router.put(`${this.path}/:id(\\d+)`, AuthMiddleware,this.task.updateTaskAssignee);
     this.router.delete(`${this.path}`, AuthMiddleware, Authorization(52), this.task.deleteAllTask);
   }
 }

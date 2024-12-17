@@ -11,6 +11,7 @@ export class TaskModel extends Model<Task, TaskCreationAttributes> implements Ta
     type: number;
     parent_table: string;
     parent_id: number;
+    status_id: number;
     assignee: number;
     created_at: Date;
 }
@@ -19,39 +20,41 @@ export default function (sequelize: Sequelize): typeof TaskModel {
 
     TaskModel.init({
         id: {
-            type: DataTypes.INTEGER,  
+            type: DataTypes.INTEGER,
             primaryKey: true,
-            autoIncrement: true, 
+            autoIncrement: true,
         },
         type: {
-            type: DataTypes.INTEGER,  
+            type: DataTypes.INTEGER,
             allowNull: true,
-            references :{
-                model:TaskTypeModel,
-            }
         },
         parent_table: {
             type: DataTypes.STRING,
-            allowNull: true, 
+            allowNull: true,
         },
         parent_id: {
-            type: DataTypes.INTEGER,  
+            type: DataTypes.INTEGER,
             allowNull: true,
         },
         assignee: {
-            type: DataTypes.INTEGER, 
+            type: DataTypes.INTEGER,
             allowNull: true,
+        },
+        status_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue :101
         },
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),  
+            defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         }
     }, {
         sequelize,
         tableName: 'task',
-        timestamps: false,  
+        timestamps: false,
     });
 
-    return TaskModel; 
+    return TaskModel;
 }
