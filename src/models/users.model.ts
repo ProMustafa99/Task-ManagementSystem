@@ -26,7 +26,7 @@ export default function (sequelize: Sequelize): typeof UserModel {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique:true
+        unique: true
       },
       status: {
         type: DataTypes.INTEGER,
@@ -41,7 +41,7 @@ export default function (sequelize: Sequelize): typeof UserModel {
     {
       tableName: 'User',
       sequelize,
-      timestamps:false
+      timestamps: false
     },
   );
 

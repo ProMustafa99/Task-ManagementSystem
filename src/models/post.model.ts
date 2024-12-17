@@ -45,7 +45,8 @@ export default function (sequelize: Sequelize): typeof PostModel {
         created_by: {
             type: DataTypes.INTEGER,
             allowNull: false,
-        },
+            field: 'created_by'  // Ensures Sequelize maps to the correct column
+         },
         created_on: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -59,13 +60,3 @@ export default function (sequelize: Sequelize): typeof PostModel {
     });
     return PostModel;
 }
-
-
-/*
-
-
-SELECT *
-FROM posts
-WHERE DATE(created_on) = CURDATE();
-
-*/

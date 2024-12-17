@@ -12,6 +12,8 @@ import { Container } from 'typedi';
 @Service()
 export class PostService {
 
+    private taskService = Container.get(TaskService);
+
     public async findAllPost(pageNumber: number): Promise<Post[]> {
         const offset = (pageNumber - 1) * 5;
 
@@ -32,11 +34,9 @@ export class PostService {
     public async createPost(postData: CreatePostDto): Promise<Post> {
 
         const createpost: Post = await DB.Posts.create({ ...postData });
-        const taskService = Container.get(TaskService);
-        const taskCount = await taskService.fetchTaskCount();
-        console.error(`Total tasks: ${taskCount}`);
+        const taskCount = await this.taskService.fetchTaskCount();
+        await this.taskService.createNewTask(createpost, "post", 67,"Active Post");
 
-        await taskService.createNewTask(createpost,"post",67);
         return createpost;
     }
 
@@ -51,16 +51,16 @@ export class PostService {
     }
 
     public async updatePost(postId: number, PostData: UpdatePostDto): Promise<number> {
-        const [updatedUser] = await DB.Posts.update({ ...PostData }, { where: { id: postId } });
-        return updatedUser;
-    }
+        const [updatedPost] = await DB.Posts.update({ ...PostData }, { where: { id: postId } });
+        const findPost = await DB.Posts.findByPk(postId);
 
-    public async activatedPost() {
-
-        const findAllPostsUnactive = await DB.Posts.findAll({
-            where : {state_id:101}
-        });
-        return findAllPostsUnactive;
+        if (PostData.state_id === 300) {
+            console.error(PostData);
+            setTimeout(async ()=>{
+                await this.taskService.createNewTask(2,findPost, "post");
+            }, 2000);
+        }
+        return updatedPost;
     }
 }
 

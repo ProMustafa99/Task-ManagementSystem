@@ -12,3 +12,6 @@ FROM
     JOIN task ON task.assignee = User.uid
     JOIN Post on task.parent_id = Post.id;
 
+
+SELECT * ,(SELECT title_en FROM task_type WHERE task.type =task_type.id)FROM task ;
+ 

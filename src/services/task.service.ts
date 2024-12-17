@@ -2,7 +2,7 @@ import { DB } from "@/database";
 import { HttpException } from "@/exceptions/httpException";
 import { Task } from "@/interfaces/task.interface";
 import { Service } from 'typedi';
-import sequelize, { Op } from 'sequelize';
+import sequelize, { Op, literal } from 'sequelize';
 
 
 @Service()
@@ -28,12 +28,11 @@ export class TaskService {
         }
     }
 
-    public async createNewTask(parent, parentTable: string, assignee: number) {
+    public async createNewTask(type, parent, parentTable: string) {
 
         await this.fetchTaskCount();
         await DB.Task.create({
-            type: 1,
-            title:"Active Post",
+            type: type,
             parent_table: parentTable,
             parent_id: parent.id,
             assignee: 67,
