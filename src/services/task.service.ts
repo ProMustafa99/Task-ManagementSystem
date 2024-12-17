@@ -4,17 +4,29 @@ import { Task } from "@/interfaces/task.interface";
 import { Service } from 'typedi';
 import sequelize, { Op, literal } from 'sequelize';
 
-
-
 @Service()
 export class TaskService {
 
-    public async getAllTask(pageNumber: number): Promise<Task[]> {
+    public async getAllTask(pageNumber: number, filters: any): Promise<Task[]> {
+        
         const offset = (pageNumber - 1) * 2;
+
+        const whereConditions: any = {};
+
+        if (filters.agentId)
+            whereConditions.assignee = filters.agentId;
+
+        if (filters.taskType)
+            whereConditions.type = filters.taskType;
+
+        if (filters.startDate)
+            whereConditions.created_at = {
+                [Op.gte]: filters.startDate,
+            };
 
         const findAllTask: Task[] = await DB.Task.findAll({
             attributes: [
-                'id', 'parent_table', 'parent_id','created_at',
+                'id', 'parent_table', 'parent_id', 'created_at',
                 [
                     sequelize.literal(`
                         (SELECT user_name 
@@ -37,16 +49,16 @@ export class TaskService {
                          FROM Status 
                          WHERE Status.id = TaskModel.status_id)
                     `),
-                    'status_task'
+                    'status Task'
                 ]
             ],
+            where: whereConditions,
             offset: offset,
             limit: 2,
         });
 
         return findAllTask;
     }
-
     public async fetchTaskCount(): Promise<number> {
         const countTask = await DB.Task.findAndCountAll();
         return countTask.count;
@@ -121,7 +133,6 @@ export class TaskService {
 
         return reassign;
     }
-
 
     public async deleteAllTasks(): Promise<void> {
         await DB.Task.destroy({
