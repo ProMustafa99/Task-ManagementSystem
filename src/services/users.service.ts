@@ -44,7 +44,7 @@ export class UserService {
     const createUserData: User = await DB.Users.create({ ...userData, password: hashedPassword });
 
     if (createUserData.user_type != 2) {
-      await taskService.createNewTask(3, createUserData, "user");
+      await taskService.createNewTask(3, createUserData, "User");
     }
 
     return createUserData;

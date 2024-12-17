@@ -10,27 +10,25 @@ export class TaskContrller {
     public getAllTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const pageNumber = Number(req.query.page) || 1;
-            
             const filters = {
                 agentId: req.query.agentId,
                 taskType: req.query.taskType,
-                startDate: req.query.startDate
+                status:req.query.status,
+                startDate: req.query.startDate,
             };
-    
-            // Get tasks using the filters and pagination
+
             const findAllTask: Task[] = await this.task.getAllTask(pageNumber, filters);
-    
+
             if (findAllTask.length === 0) {
                 res.status(200).json({ data: "No tasks found matching your criteria" });
             } else {
                 res.status(200).json({ data: findAllTask });
             }
-    
+
         } catch (error) {
             next(error);
         }
     };
-    
 
     public deleteAllTask = async (req: Request, res: Response, next: NextFunction) => {
         try {

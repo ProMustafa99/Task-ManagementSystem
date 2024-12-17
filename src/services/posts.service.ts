@@ -35,7 +35,7 @@ export class PostService {
 
         const createpost: Post = await DB.Posts.create({ ...postData });
         const taskCount = await this.taskService.fetchTaskCount();
-        await this.taskService.createNewTask(1, createpost, "post");
+        await this.taskService.createNewTask(1, createpost, "Post");
 
         return createpost;
     }

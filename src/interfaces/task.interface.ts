@@ -1,5 +1,5 @@
 export interface Task {
-    id?:number;
+    id:number;
     type:number;
     parent_table:string;
     parent_id:number;

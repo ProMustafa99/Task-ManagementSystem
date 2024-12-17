@@ -2,15 +2,14 @@ import { DB } from "@/database";
 import { HttpException } from "@/exceptions/httpException";
 import { Task } from "@/interfaces/task.interface";
 import { Service } from 'typedi';
-import sequelize, { Op, literal } from 'sequelize';
+import sequelize, { Op, literal, where } from 'sequelize';
 
 @Service()
 export class TaskService {
 
     public async getAllTask(pageNumber: number, filters: any): Promise<Task[]> {
-        
-        const offset = (pageNumber - 1) * 2;
 
+        const offset = (pageNumber - 1) * 5;
         const whereConditions: any = {};
 
         if (filters.agentId)
@@ -19,6 +18,9 @@ export class TaskService {
         if (filters.taskType)
             whereConditions.type = filters.taskType;
 
+        if (filters.status)
+            whereConditions.status_id = filters.status;
+
         if (filters.startDate)
             whereConditions.created_at = {
                 [Op.gte]: filters.startDate,
@@ -26,7 +28,23 @@ export class TaskService {
 
         const findAllTask: Task[] = await DB.Task.findAll({
             attributes: [
-                'id', 'parent_table', 'parent_id', 'created_at',
+                ['id',"ID"],['parent_table','Parent table'],['created_at','Date added'],
+                [
+                    sequelize.literal(`
+                        CASE
+                            WHEN parent_table = 'User' THEN 
+                                (SELECT user_name 
+                                 FROM User
+                                 WHERE User.uid = TaskModel.parent_id)
+                            WHEN parent_table = 'Post' THEN
+                                (SELECT title_en 
+                                 FROM Post
+                                 WHERE Post.id = TaskModel.parent_id)
+                            ELSE NULL
+                        END
+                    `),
+                    'Parent title'
+                ],
                 [
                     sequelize.literal(`
                         (SELECT user_name 
@@ -49,16 +67,17 @@ export class TaskService {
                          FROM Status 
                          WHERE Status.id = TaskModel.status_id)
                     `),
-                    'status Task'
+                    'status'
                 ]
             ],
             where: whereConditions,
             offset: offset,
-            limit: 2,
+            limit: 5,
         });
 
         return findAllTask;
     }
+    
     public async fetchTaskCount(): Promise<number> {
         const countTask = await DB.Task.findAndCountAll();
         return countTask.count;

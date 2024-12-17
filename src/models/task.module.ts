@@ -7,7 +7,7 @@ import { TaskTypeModel } from "./taskType.model";
 export type TaskCreationAttributes = Optional<Task, 'id'>;
 
 export class TaskModel extends Model<Task, TaskCreationAttributes> implements Task {
-    id?: number;
+    id: number;
     type: number;
     parent_table: string;
     parent_id: number;

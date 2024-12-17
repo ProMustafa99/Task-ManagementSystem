@@ -23,7 +23,7 @@ export class CreatePostDto {
   public description_ar: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   public state_id: number;
 
   @IsOptional()  
