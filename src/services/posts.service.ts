@@ -1,13 +1,9 @@
 import { Service } from 'typedi';
 import { DB } from '@database';
-import { promises } from 'dns';
 import { Post } from "@/interfaces/post.interface";
-import { HttpException } from '@/exceptions/httpException';
 import { CreatePostDto, UpdatePostDto } from '@/dtos/posts.dto';
-import sequelize from 'sequelize';
 import { TaskService } from './task.service';
 import { Container } from 'typedi';
-
 
 @Service()
 export class PostService {

@@ -2,7 +2,8 @@ import { DB } from "@/database";
 import { HttpException } from "@/exceptions/httpException";
 import { Task } from "@/interfaces/task.interface";
 import { Service } from 'typedi';
-import sequelize, { Op, literal, where } from 'sequelize';
+import sequelize, { Op } from 'sequelize';
+import { agent } from "supertest";
 
 @Service()
 export class TaskService {
@@ -28,7 +29,7 @@ export class TaskService {
 
         const findAllTask: Task[] = await DB.Task.findAll({
             attributes: [
-                ['id',"ID"],['parent_table','Parent table'],['created_at','Date added'],
+                ['id', "ID"], ['parent_table', 'Parent table'], ['created_at', 'Date added'],
                 [
                     sequelize.literal(`
                         CASE
@@ -40,7 +41,6 @@ export class TaskService {
                                 (SELECT title_en 
                                  FROM Post
                                  WHERE Post.id = TaskModel.parent_id)
-                            ELSE NULL
                         END
                     `),
                     'Parent title'
@@ -71,21 +71,28 @@ export class TaskService {
                 ]
             ],
             where: whereConditions,
-            offset: offset,
-            limit: 5,
+            offset: 0,
+            limit: 100,
         });
 
         return findAllTask;
     }
-    
+
     public async fetchTaskCount(): Promise<number> {
-        const countTask = await DB.Task.findAndCountAll();
+        const countTask = await DB.Task.findAndCountAll({
+            where: { status_id: 101 }
+        });
         return countTask.count;
     }
 
     public async fetchTaskCountForAgents(agentId) {
         const countTaskForAgents = await DB.Task.findAndCountAll({
-            where: { assignee: agentId }
+            where: {
+                [Op.and]: [
+                    { assignee: agentId },
+                    { status_id: 101 }
+                ]
+            }
         });
 
         return countTaskForAgents.count;
@@ -93,21 +100,42 @@ export class TaskService {
 
     public async createNewTask(type, parent, parentTable: string) {
 
-        const totalTask = await this.fetchTaskCount();
-        const countTaskForAgent1 = await this.fetchTaskCountForAgents(67);
-        const countTaskForAgent2 = await this.fetchTaskCountForAgents(68);
-        const countTaskForAgent3 = await this.fetchTaskCountForAgents(69);
-        var assignee: number;
+        var assignee: number = 67;
+
+        const agentTaskCounts = await Promise.all([
+            this.fetchTaskCountForAgents(67),
+            this.fetchTaskCountForAgents(68),
+            this.fetchTaskCountForAgents(69),
+        ]);
+
+        const [countTaskA1, countTaskA2, countTaskA3] = agentTaskCounts;
+        const totalTask = countTaskA1 + countTaskA2 + countTaskA3;
+
+        const avgTask = [
+            { id: 67, agentName: "Agent1", avgTask: Number(((countTaskA1 / totalTask) * 100).toFixed(0)) },
+            { id: 68, agentName: "Agent2", avgTask: Number(((countTaskA2 / totalTask) * 100).toFixed(0)) },
+            { id: 69, agentName: "Agent3", avgTask: Number(((countTaskA3 / totalTask) * 100).toFixed(0)) }
+        ];
+
+        if (totalTask > 0) {
+            if (avgTask[0].avgTask < 40) {
+                assignee = 67;
+            } else if (avgTask[1].avgTask < 40) {
+                assignee = 68;
+            } else {
+                assignee = 69;
+            }
+        }
 
         await DB.Task.create({
             type: type,
             parent_table: parentTable,
             parent_id: parent.id || parent.uid,
-            assignee: 67,
+            assignee: assignee,
             created_at: new Date(),
         });
     }
-
+    
     public async markTaskAsDone(taskId: number): Promise<string> {
 
         const findTask = await DB.Task.findOne({
