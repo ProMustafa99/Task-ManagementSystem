@@ -46,6 +46,6 @@ export const DB = {
   Tag: TagModel(sequelize),
   Articl: ArticleModel(sequelize),
   ArticleTag: ArticleModel(sequelize),
-  sequelize, // connection instance (RAW queries)
-  Sequelize, // library
+  sequelize, 
+  Sequelize,
 };
