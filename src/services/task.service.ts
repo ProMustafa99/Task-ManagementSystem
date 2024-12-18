@@ -3,7 +3,6 @@ import { HttpException } from "@/exceptions/httpException";
 import { Task } from "@/interfaces/task.interface";
 import { Service } from 'typedi';
 import sequelize, { Op } from 'sequelize';
-import { agent } from "supertest";
 
 @Service()
 export class TaskService {
