@@ -47,10 +47,6 @@ export class CreateArticleDto {
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url: string;
-
-    @IsNumber({}, { message: 'Created by must be a valid number.' })
-    @IsNotEmpty({ message: 'Created by is required.' })
-    public created_by: number;
 }
 
 export class UpdateArticleDto {
@@ -99,21 +95,4 @@ export class UpdateArticleDto {
     @IsOptional()
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     public cover_image_url?: string;
-
-    @IsNumber({}, { message: 'Updated by must be a valid number.' })
-    @IsNotEmpty({ message: 'Updated by is required when updating a tag.' })
-    public updated_by?: number;
-
-    @IsOptional()
-    @IsDate({ message: 'Updated on must be a valid date.' })
-    public updated_on?: Date;
-
-    @IsOptional()
-    @IsDate({ message: 'Deleted on must be a valid date.' })
-    @IsNotEmpty({ message: 'Updated on is required when updating a tag.' })
-    public deleted_on?: Date;
-
-    @IsOptional()
-    @IsNumber({}, { message: 'Deleted by must be a valid number.' })
-    public deleted_by?: number;
 }
