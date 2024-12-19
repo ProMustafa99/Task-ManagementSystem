@@ -7,6 +7,7 @@ export class TagModel extends Model<Tags, TagCreationAttributes> implements Tags
     public id: number;
     public title_en: string;
     public title_ar: string;
+    public record_status: number;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date | null;
@@ -23,6 +24,10 @@ export default function (sequelize: Sequelize): typeof TagModel {
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             title_en: {
                 type: DataTypes.STRING(255),

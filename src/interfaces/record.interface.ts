@@ -1,4 +1,5 @@
 export interface Record {
+    record_status:number;
     created_on: Date;
     created_by: number;
     updated_on: Date;

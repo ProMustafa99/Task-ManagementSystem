@@ -9,6 +9,7 @@ export class BlogModel extends Model<Blog, BlogCreationAttributes> implements Bl
     public title_ar: string;
     public url_en: string;
     public url_ar: string;
+    public record_status: number;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date;
@@ -25,6 +26,10 @@ export default function (sequelize: Sequelize): typeof BlogModel {
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             title_en: {
                 type: DataTypes.STRING(255),

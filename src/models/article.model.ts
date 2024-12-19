@@ -16,6 +16,7 @@ export class ArticleModel extends Model<Article, ArticleCreationAttributes> impl
     public in_links: string[] | null;
     public related_links: string[] | null;
     public cover_image_url: string;
+    public record_status: number;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date | null;
@@ -32,6 +33,10 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             blog_id: {
                 type: DataTypes.INTEGER,
