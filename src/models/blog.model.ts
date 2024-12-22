@@ -27,25 +27,28 @@ export default function (sequelize: Sequelize): typeof BlogModel {
                 autoIncrement: true,
                 allowNull: false,
             },
-            record_status: {
-                type: DataTypes.INTEGER,
-                allowNull: false
-            },
+
             title_en: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
             },
             title_ar: {
                 type: DataTypes.STRING(255),
-                allowNull: false,
+                allowNull: true,
             },
             url_en: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+                unique:true,
             },
             url_ar: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+                unique:true,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             created_on: {
                 type: DataTypes.DATE,

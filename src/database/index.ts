@@ -8,7 +8,7 @@ import UserPermissionModel from '@/models/userPermission.model';
 import TaskTypeModel from '@/models/taskType.model';
 import TaskModel from '@/models/task.module';
 import BlogModel from '@/models/blog.model';
-import TagModel from '@/models/tags.model';
+import TagModel from '@/models/tag.model';
 import ArticleModel from '@/models/article.model';
 
 

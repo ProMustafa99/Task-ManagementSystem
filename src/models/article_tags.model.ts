@@ -7,6 +7,13 @@ export class ArticleTagModel extends Model<ArticleTag, ArticleTagCreationAttribu
     public id!: number;
     public article_id!: number;
     public tag_id!: number;
+    public record_status: number;
+    public created_on: Date;
+    public created_by: number;
+    public updated_on: Date;
+    public updated_by: number;
+    public deleted_on: Date;
+    public deleted_by: number;
 }
 
 export default function (sequelize: Sequelize): typeof ArticleTagModel {
@@ -25,6 +32,36 @@ export default function (sequelize: Sequelize): typeof ArticleTagModel {
             tag_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                defaultValue: 101,
+                allowNull: false
+            },
+            created_on: {
+                type: DataTypes.DATE,
+                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+                allowNull: false,
+            },
+            created_by: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            updated_on: {
+                type: DataTypes.DATE,
+                allowNull: true,
+            },
+            updated_by: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            deleted_on: {
+                type: DataTypes.DATE,
+                allowNull: true,
+            },
+            deleted_by: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
             },
         },
         {

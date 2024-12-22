@@ -34,10 +34,6 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
                 autoIncrement: true,
                 allowNull: false,
             },
-            record_status: {
-                type: DataTypes.INTEGER,
-                allowNull: false
-            },
             blog_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -48,15 +44,17 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
             },
             title_ar: {
                 type: DataTypes.STRING(255),
-                allowNull: false,
+                allowNull: true,
             },
             url_en: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+                unique:true,
             },
             url_ar: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+                unique:true,
             },
             description_en: {
                 type: DataTypes.TEXT,
@@ -64,7 +62,7 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
             },
             description_ar: {
                 type: DataTypes.TEXT,
-                allowNull: false,
+                allowNull: true,
             },
             in_links: {
                 type: DataTypes.JSON,
@@ -77,6 +75,10 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
             cover_image_url: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                allowNull: false
             },
             created_on: {
                 type: DataTypes.DATE,

@@ -25,22 +25,24 @@ export default function (sequelize: Sequelize): typeof TagModel {
                 autoIncrement: true,
                 allowNull: false,
             },
-            record_status: {
-                type: DataTypes.INTEGER,
-                allowNull: false
-            },
+
             title_en: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
             },
             title_ar: {
                 type: DataTypes.STRING(255),
-                allowNull: false,
+                allowNull: true,
+            },
+            record_status: {
+                type: DataTypes.INTEGER,
+                defaultValue: 101,
+                allowNull: false
             },
             created_on: {
                 type: DataTypes.DATE,
-                allowNull: false,
                 defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+                allowNull: false,
             },
             created_by: {
                 type: DataTypes.INTEGER,
