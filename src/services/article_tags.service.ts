@@ -1,19 +1,13 @@
 import { DB } from '@/database';
 import { HttpException } from '@/exceptions/httpException';
-import { Blog } from '@/interfaces/blog.interface';
 import { Service } from 'typedi';
 import sequelize, { Op, where } from 'sequelize';
-import { CreateTagDto } from '@/dtos/tag.dto';
-import { Tags } from '@/interfaces/tags.interface';
-import { Tag } from 'swagger-jsdoc';
 import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { ArticleTagModel } from '@/models/article_tags.model';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 
-
 @Service()
 export class ArticleTagsService {
-
 
     public async getTagByArticleId(article_id: number, pageNumber: number): Promise<ArticleTagModel[] | string> {
 
