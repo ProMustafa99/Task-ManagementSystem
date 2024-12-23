@@ -7,3 +7,10 @@ export interface Record {
     deleted_on: Date;
     deleted_by: number;
 }
+
+
+export enum RecordStatus {
+    PINDING = 1,        
+    ACTIVE = 2,      
+    DELETED = 3,
+}

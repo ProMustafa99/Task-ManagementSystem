@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { Article } from '@interfaces/article.interface';
+import { RecordStatus } from '@/interfaces/record.interface';
 
 // Creation Attributes for Article: Optional fields during creation
 export type ArticleCreationAttributes = Optional<Article, 'id' | 'updated_on' | 'updated_by' | 'deleted_on' | 'deleted_by' | 'in_links' | 'related_links'>;
@@ -16,7 +17,7 @@ export class ArticleModel extends Model<Article, ArticleCreationAttributes> impl
     public in_links: string[] | null;
     public related_links: string[] | null;
     public cover_image_url: string;
-    public record_status: number;
+    public record_status: RecordStatus;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date | null;
@@ -78,7 +79,8 @@ export default function (sequelize: Sequelize): typeof ArticleModel {
             },
             record_status: {
                 type: DataTypes.INTEGER,
-                allowNull: false
+                allowNull: false,
+                defaultValue :RecordStatus.PINDING
             },
             created_on: {
                 type: DataTypes.DATE,

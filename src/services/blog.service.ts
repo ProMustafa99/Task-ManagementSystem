@@ -10,14 +10,19 @@ import { CreateBlogDto, UpdateBlogDto } from '@/dtos/blog.dto';
 export class BlogService {
 
     public async getAllBlog(pageNumber: number): Promise<Blog[] | string> {
-
         const offset = (pageNumber - 1) * 15;
 
         const getUserName = (field: string) =>
             sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = BlogModel.${field})`);
-
         const getStatusName = () =>
-            sequelize.literal(`(SELECT Name_en FROM Status WHERE Status.id = BlogModel.record_status)`);
+            sequelize.literal(`
+                CASE
+                    WHEN BlogModel.record_status = 1 THEN 'PENDING'
+                    WHEN BlogModel.record_status = 2 THEN 'ACTIVE'
+                    WHEN BlogModel.record_status = 3 THEN 'DELETED'
+                    ELSE 'UNKNOWN'
+                END
+            `);;
 
         const allBlog: Blog[] = await DB.Blog.findAll({
             attributes: [
@@ -38,23 +43,30 @@ export class BlogService {
 
     public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {
 
-        const checkUrl = await DB.Blog.findAll({
+        const existingUrl = await DB.Blog.findOne({
             where: {
                 [Op.or]: [
                     { url_en: blog_data.url_en },
-                    { url_ar: blog_data.url_ar },
+                    { url_ar: blog_data.url_ar }
                 ]
             }
         });
 
-        if (checkUrl.length > 0)
-            throw new HttpException(404, 'A blog with the same URL already exists');
+        if (existingUrl) {
+            if (existingUrl.url_en === blog_data.url_en) {
+                throw new HttpException(409, 'A Blog with the same URL (English) already exists.');
+            }
+            if (existingUrl.url_ar === blog_data.url_ar) {
+                throw new HttpException(409, 'A Blog with the same URL (Arabic) already exists.');
+            }
+        }
 
         const create_blog: Blog = await DB.Blog.create({ ...blog_data, created_by: user_id });
         return create_blog;
     }
 
     public async upddateBlog(blog_id: number, blog_data: UpdateBlogDto, user_id: number): Promise<string> {
+        
         const checkOnBlog: Blog = await DB.Blog.findByPk(blog_id);
 
         if (!checkOnBlog) {
@@ -90,18 +102,19 @@ export class BlogService {
     public async deleteBlog(blog_id: number, user_id: number): Promise<Blog | string> {
 
         const checkOnBlog: Blog = await DB.Blog.findByPk(blog_id);
+        console.log(checkOnBlog);
 
         if (!checkOnBlog)
             throw new HttpException(404, "Blog doesn't exist");
 
-        if (checkOnBlog.record_status === 102) {
+        if (checkOnBlog.record_status === 3) {
             throw new HttpException(404, "The blog is already deleted");
         }
 
-        await DB.Blog.update({ record_status: 102, deleted_by: user_id, deleted_on: new Date() }, { where: { id: blog_id } })
+        await DB.Blog.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { id: blog_id } })
             .then(async () => {
-                await DB.Articl.update(
-                    { record_status: 102, deleted_by: user_id, deleted_on: new Date() },
+                await DB.Article.update(
+                    { record_status: 3, deleted_by: user_id, deleted_on: new Date() },
                     { where: { blog_id: blog_id } }
                 );
             });

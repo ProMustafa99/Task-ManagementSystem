@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { Blog } from '@interfaces/blog.interface';
+import { RecordStatus } from '@/interfaces/record.interface';
 
 export type BlogCreationAttributes = Optional<Blog, 'id' | 'updated_on' | 'updated_by' | 'deleted_on' | 'deleted_by'>;
 
@@ -9,7 +10,7 @@ export class BlogModel extends Model<Blog, BlogCreationAttributes> implements Bl
     public title_ar: string;
     public url_en: string;
     public url_ar: string;
-    public record_status: number;
+    public record_status: RecordStatus;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date;
@@ -49,7 +50,7 @@ export default function (sequelize: Sequelize): typeof BlogModel {
             record_status: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue :101
+                defaultValue :RecordStatus.PINDING
             },
             created_on: {
                 type: DataTypes.DATE,

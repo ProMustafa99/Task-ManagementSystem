@@ -1,7 +1,6 @@
-import { IsString, IsOptional, IsNumber, IsArray, IsUrl, IsDate, MaxLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty } from 'class-validator';
 
 export class CreateArticleDto {
-
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
     @IsNotEmpty({ message: 'Blog ID is required.' })
     public blog_id: number;
@@ -16,14 +15,14 @@ export class CreateArticleDto {
     @MaxLength(255, { message: 'Title in Arabic should not exceed 255 characters.' })
     public title_ar: string;
 
-    @IsString({ message: 'URL in English must be a string.' })
     @IsNotEmpty({ message: 'URL in English is required.' })
     @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
+    @IsUrl({ require_protocol: true }, { message: 'URL in English must be a valid URL format with a protocol.' })
     public url_en: string;
 
-    @IsString({ message: 'URL in Arabic must be a string.' })
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
+    @IsUrl({ require_protocol: true }, { message: 'URL in Arabic must be a valid URL format with a protocol.' })
     public url_ar: string;
 
     @IsString({ message: 'Description in English must be a string.' })
@@ -65,13 +64,11 @@ export class UpdateArticleDto {
     public title_ar?: string;
 
     @IsOptional()
-    @IsString({ message: 'URL in English must be a string.' })
-    @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
+    @IsUrl({ require_protocol: true }, { message: 'URL in English must be a valid URL format with a protocol.' })
     public url_en?: string;
 
     @IsOptional()
-    @IsString({ message: 'URL in Arabic must be a string.' })
-    @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
+    @IsUrl({ require_protocol: true }, { message: 'URL in Arabic must be a valid URL format with a protocol.' })
     public url_ar?: string;
 
     @IsOptional()

@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { ArticleTag } from '@interfaces/article_tag.interface';
+import { RecordStatus } from '@/interfaces/record.interface';
 
 export type ArticleTagCreationAttributes = Optional<ArticleTag, 'id'>;
 
@@ -7,7 +8,7 @@ export class ArticleTagModel extends Model<ArticleTag, ArticleTagCreationAttribu
     public id!: number;
     public article_id!: number;
     public tag_id!: number;
-    public record_status: number;
+    public record_status: RecordStatus;
     public created_on: Date;
     public created_by: number;
     public updated_on: Date;
@@ -35,7 +36,7 @@ export default function (sequelize: Sequelize): typeof ArticleTagModel {
             },
             record_status: {
                 type: DataTypes.INTEGER,
-                defaultValue: 101,
+                defaultValue: RecordStatus.ACTIVE,
                 allowNull: false
             },
             created_on: {

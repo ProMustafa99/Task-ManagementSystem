@@ -44,7 +44,7 @@ export const DB = {
   Task: TaskModel(sequelize),
   Blog: BlogModel(sequelize),
   Tag: TagModel(sequelize),
-  Articl: ArticleModel(sequelize),
+  Article: ArticleModel(sequelize),
   ArticleTag: ArticleModel(sequelize),
   sequelize, 
   Sequelize,
