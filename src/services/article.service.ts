@@ -92,6 +92,21 @@ export class ArticleService {
     }
 
     public async createNewArticl(article_data: CreateArticleDto, user_id: number): Promise<Article> {
+      
+        const existingBlog = await DB.Blog.findOne({
+            where: {
+                [Op.and]: [
+                    { id: article_data.blog_id },
+                    { record_status: 2 }
+                ]
+            }
+        });
+    
+
+        if (!existingBlog) {
+            throw new HttpException(409, "The Blog doesn't exist or is not active.");
+        }
+
 
         const existingUrl = await DB.Article.findOne({
             where: {
@@ -101,20 +116,20 @@ export class ArticleService {
                 ]
             }
         });
-
+    
         if (existingUrl) {
             if (existingUrl.url_en === article_data.url_en) {
-                throw new HttpException(409, 'A Article with the same URL (English) already exists.');
+                throw new HttpException(409, 'An Article with the same URL (English) already exists.');
             }
             if (existingUrl.url_ar === article_data.url_ar) {
-                throw new HttpException(409, 'A Article with the same URL (Arabic) already exists.');
+                throw new HttpException(409, 'An Article with the same URL (Arabic) already exists.');
             }
         }
 
         const create_article: Article = await DB.Article.create({ ...article_data, created_by: user_id });
         return create_article;
     }
-
+    
     public async upddateArtilce(article_id: number, article_data: UpdateArticleDto, user_id: number): Promise<string> {
 
         const checkOnArticle: Article = await DB.Article.findByPk(article_id);

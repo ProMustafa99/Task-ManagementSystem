@@ -10,6 +10,7 @@ import TaskModel from '@/models/task.module';
 import BlogModel from '@/models/blog.model';
 import TagModel from '@/models/tag.model';
 import ArticleModel from '@/models/article.model';
+import  ArticleTagModel  from '@/models/article_tags.model';
 
 
 const sequelize = new Sequelize.Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
@@ -45,7 +46,7 @@ export const DB = {
   Blog: BlogModel(sequelize),
   Tag: TagModel(sequelize),
   Article: ArticleModel(sequelize),
-  ArticleTag: ArticleModel(sequelize),
+  ArticleTag: ArticleTagModel(sequelize),
   sequelize, 
   Sequelize,
 };

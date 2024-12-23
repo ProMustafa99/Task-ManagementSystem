@@ -43,5 +43,11 @@ export class UpdateBlogDto {
     @IsString({ message: 'URL in Arabic must be a valid string.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
     public url_ar?: string;
+
+    @IsOptional()
+    @IsString({ message: 'URL in Arabic must be a valid string.' })
+    @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
+    public record_status?: number;
+    
 }
 

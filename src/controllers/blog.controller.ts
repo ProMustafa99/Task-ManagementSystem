@@ -1,11 +1,5 @@
 import { Container } from 'typedi';
-import { PostService } from '@services/posts.service';
 import { Request, Response, NextFunction } from 'express';
-import { Post } from "@/interfaces/post.interface";
-import { CreatePostDto, UpdatePostDto } from '@/dtos/posts.dto';
-import { registerSchema } from 'class-validator';
-import { json } from 'sequelize';
-import { Console } from 'console';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { BlogService } from '@/services/blog.service';
 import { Blog } from '@/interfaces/blog.interface';
@@ -16,12 +10,16 @@ import { CreateTagDto } from '@/dtos/tag.dto';
 import { ArticleService } from '@/services/article.service';
 import { Article } from '@/interfaces/article.interface';
 import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
+import { ArticleTag } from '@/interfaces/article_tag.interface';
+import { ArticleTagsService } from '@/services/article_tags.service';
+import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 
 export class BlogMangmentcotroller {
 
     public blogService = Container.get(BlogService);
     public tagService = Container.get(TagService);
     public articleService = Container.get(ArticleService);
+    public articleTagsService = Container.get(ArticleTagsService)
 
 
     // Blog Controller
@@ -94,7 +92,6 @@ export class BlogMangmentcotroller {
 
     public createNewbTag = async (req: RequestWithUser, res: Response, next: NextFunction) => {
         try {
-
             const tag_data: CreateTagDto = req.body;
             const user_id = Number(req.user.uid);
             const newTag = await this.tagService.createNewTag(tag_data, user_id);
@@ -183,4 +180,49 @@ export class BlogMangmentcotroller {
         }
     };
 
+    // Article Tags Controller
+    public getTagByArticleId = async (req: Request, res: Response, next: NextFunction) => {
+
+        try {
+            const page_number = Number(req.query.page) || 1;
+            const article_id = Number(req.params.id);
+            const findTagsPerAricle: ArticleTag[] | string = await this.articleTagsService.getTagByArticleId(article_id, page_number);
+            res.status(200).json({ data: findTagsPerAricle });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+
+    public createNewTagsForArticle = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+        try {
+            const create_tagsforAtricle: CreateArticleTagDto = req.body;
+            const user_id = Number(req.user.uid);
+            const article_id = Number(req.body.article_id);
+            const tag_id = Number(req.body.tag_id);
+
+            console.error(article_id);
+            console.error(tag_id);
+            const newTag = await this.articleTagsService.createNewTagsForArticle(article_id, tag_id, create_tagsforAtricle, user_id);
+            res.status(200).json({ data: newTag });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+
+    public deleteTagsFromArticle = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+        try {
+            const user_id = Number(req.user.uid);
+            const article_id = Number(req.params.article_id); 
+            const tag_id = Number(req.params.tag_id);
+
+            const result = await this.articleTagsService.deleteTagsFormArticle(article_id, tag_id, user_id);
+    
+            res.status(200).json({ message: `Tag ${tag_id} successfully removed from article ${article_id}`, data: result });
+        } catch (error) {
+            next(error);
+        }
+    };
+    
 }

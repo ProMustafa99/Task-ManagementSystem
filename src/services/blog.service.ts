@@ -43,6 +43,8 @@ export class BlogService {
 
     public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {
 
+        console.error(`Data ----> ${blog_data}`);
+
         const existingUrl = await DB.Blog.findOne({
             where: {
                 [Op.or]: [
@@ -51,7 +53,7 @@ export class BlogService {
                 ]
             }
         });
-
+    
         if (existingUrl) {
             if (existingUrl.url_en === blog_data.url_en) {
                 throw new HttpException(409, 'A Blog with the same URL (English) already exists.');
@@ -60,10 +62,11 @@ export class BlogService {
                 throw new HttpException(409, 'A Blog with the same URL (Arabic) already exists.');
             }
         }
-
+    
         const create_blog: Blog = await DB.Blog.create({ ...blog_data, created_by: user_id });
         return create_blog;
     }
+    
 
     public async upddateBlog(blog_id: number, blog_data: UpdateBlogDto, user_id: number): Promise<string> {
         
