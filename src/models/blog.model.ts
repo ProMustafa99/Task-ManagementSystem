@@ -48,7 +48,8 @@ export default function (sequelize: Sequelize): typeof BlogModel {
             },
             record_status: {
                 type: DataTypes.INTEGER,
-                allowNull: false
+                allowNull: false,
+                defaultValue :101
             },
             created_on: {
                 type: DataTypes.DATE,
