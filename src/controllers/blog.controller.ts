@@ -14,6 +14,8 @@ import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { ArticleTagsService } from '@/services/article_tags.service';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { SearchArticleService } from '@/services/search_article.service';
+import cache from "../utils/cache"; 
+
 
 export class BlogMangmentcotroller {
 
@@ -46,6 +48,7 @@ export class BlogMangmentcotroller {
             console.log(user_id);
             const newBlog = await this.blogService.createNewBlog(blog_data, user_id);
             res.status(200).json({ data: newBlog });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -60,9 +63,10 @@ export class BlogMangmentcotroller {
             const blog_id = Number(req.params.id);
             const udpateBlog = await this.blogService.updateBlog(blog_id, blog_data, user_id);
             res.status(200).json({ message: udpateBlog });
+            cache.flush();
         }
         catch (error) {
-         
+
             next(error);
         }
     };
@@ -73,6 +77,7 @@ export class BlogMangmentcotroller {
             const blog_id = Number(req.params.id);
             const deleteBlog = await this.blogService.deleteBlog(blog_id, user_id);
             res.status(200).json({ message: deleteBlog });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -81,7 +86,6 @@ export class BlogMangmentcotroller {
     };
 
     // Tags Controller
-
     public getAllTags = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
@@ -100,6 +104,7 @@ export class BlogMangmentcotroller {
             const user_id = Number(req.user.uid);
             const newTag = await this.tagService.createNewTag(tag_data, user_id);
             res.status(200).json({ data: newTag });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -112,6 +117,7 @@ export class BlogMangmentcotroller {
             const tag_id = Number(req.params.id);
             const deletetag = await this.tagService.deleteTag(tag_id, user_id);
             res.status(200).json({ message: deletetag });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -120,7 +126,6 @@ export class BlogMangmentcotroller {
     };
 
     // Article Controller
-
     public getAllArticle = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
@@ -152,6 +157,7 @@ export class BlogMangmentcotroller {
             const user_id = Number(req.user.uid);
             const newArticle = await this.articleService.createNewArticl(article_data, user_id);
             res.status(200).json({ data: newArticle });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -165,6 +171,7 @@ export class BlogMangmentcotroller {
             const article_id = Number(req.params.id);
             const udpateArticle = await this.articleService.upddateArtilce(article_id, article_data, user_id);
             res.status(200).json({ message: udpateArticle });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -177,6 +184,7 @@ export class BlogMangmentcotroller {
             const article_id = Number(req.params.id);
             const deleteArticle = await this.articleService.deleteArticle(article_id, user_id);
             res.status(200).json({ message: deleteArticle });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -208,6 +216,7 @@ export class BlogMangmentcotroller {
             console.error(tag_id);
             const newTag = await this.articleTagsService.createNewTagsForArticle(article_id, tag_id, create_tagsforAtricle, user_id);
             res.status(200).json({ data: newTag });
+            cache.flush();
         }
         catch (error) {
             next(error);
@@ -221,30 +230,41 @@ export class BlogMangmentcotroller {
             const tag_id = Number(req.params.tag_id);
 
             const result = await this.articleTagsService.deleteTagsFormArticle(article_id, tag_id, user_id);
-
             res.status(200).json({ message: `Tag ${tag_id} successfully removed from article ${article_id}`, data: result });
+            cache.flush();
         } catch (error) {
             next(error);
         }
     };
 
-    // Seatrch About Article 
     public SearchArticle = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
             const searchTerm: string = String(req.query.search_term);
             const pageNumber = Number(req.query.page) || 1;
-            const articles = await this.search.SearchArticles(pageNumber, searchTerm);
             var message: string = `Articles fetched successfully`;
+            const cacheKey = `articles:${searchTerm}:${pageNumber}`;
+            const cachedData = cache.get<any>(cacheKey);
+
+            if (cachedData) {
+                console.error("Cache hit");
+                return res.status(200).json({
+                    message: "Cached Articles fetched successfully",
+                    data: cachedData,
+                });
+            }
+
+            const articles = await this.search.SearchArticles(pageNumber, searchTerm);
+
 
             if (articles.searchResults.length === 0) {
                 message = `Not Found Articles`;
             }
-            res.status(200).json({
-                message: message,
-                data: articles,
-            });
+            else {
+                cache.set(cacheKey, articles, 300);
+            }
 
+            res.status(200).json({ message: message, data: articles, });
         } catch (error) {
             next(error);
         }
