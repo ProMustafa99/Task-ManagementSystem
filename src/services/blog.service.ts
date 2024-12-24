@@ -67,8 +67,7 @@ export class BlogService {
         return create_blog;
     }
     
-
-    public async upddateBlog(blog_id: number, blog_data: UpdateBlogDto, user_id: number): Promise<string> {
+    public async updateBlog(blog_id: number, blog_data: UpdateBlogDto, user_id: number): Promise<string> {
         
         const checkOnBlog: Blog = await DB.Blog.findByPk(blog_id);
 

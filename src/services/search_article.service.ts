@@ -3,20 +3,21 @@ import { Service } from 'typedi';
 import { QueryTypes } from 'sequelize';
 import { Article } from '@/interfaces/article.interface';
 
-// Note give Ex from Yazan
+// ###### Note Get example from Yazan
 
 @Service()
 export class SearchArticleService {
 
-    public async SearchArticle(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number; countForPage: number }> {
+    public async SearchArticle(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number;countPerPage: number }> {
         const sequelize = DB.sequelize;
-        const countPerPage = 15;
-        const offset = (pageNumber - 1) * countPerPage;
+        const limit = 15;
+        const offset = (pageNumber - 1) * limit;
 
         const query = `
             SELECT
+                article.id As Id,
                 article.title_en AS article_title,
-                article.description_en AS article_description,
+                SUBSTRING (article.description_en,1,150) AS article_description,
                 article.cover_image_url AS cover_image_url,
                 GROUP_CONCAT(tag.title_en) AS tags
             FROM article
@@ -28,7 +29,7 @@ export class SearchArticleService {
                 OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
             GROUP BY article.id
-            LIMIT :countPerPage OFFSET :offset
+            LIMIT :limit OFFSET :offset
         `;
 
         const countQuery = `
@@ -44,7 +45,7 @@ export class SearchArticleService {
         `;
 
         const searchResults: Article[] = await sequelize.query(query, {
-            replacements: { search_term, countPerPage, offset },
+            replacements: { search_term, limit, offset },
             type: QueryTypes.SELECT,
         });
 
@@ -54,12 +55,11 @@ export class SearchArticleService {
         });
 
         const totalCount = (totalCountRow[0] as any).totalCount;
-        const countForPage = searchResults.length;
+        const countPerPage = searchResults.length;
 
         return {
             totalCount,
             countPerPage,
-            countForPage,
             currentPage: pageNumber,
             searchResults,
         };

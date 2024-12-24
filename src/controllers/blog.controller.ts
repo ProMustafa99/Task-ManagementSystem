@@ -54,13 +54,15 @@ export class BlogMangmentcotroller {
 
     public updateBlog = async (req: RequestWithUser, res: Response, next: NextFunction) => {
         try {
-            const blog_data: UpdateBlogDto = req.body;
+            const blog_data = req.body;
+            console.log(req.body);
             const user_id = Number(req.user.uid);
             const blog_id = Number(req.params.id);
-            const udpateBlog = await this.blogService.upddateBlog(blog_id, blog_data, user_id);
+            const udpateBlog = await this.blogService.updateBlog(blog_id, blog_data, user_id);
             res.status(200).json({ message: udpateBlog });
         }
         catch (error) {
+         
             next(error);
         }
     };
@@ -116,7 +118,6 @@ export class BlogMangmentcotroller {
             console.error(`Error ${error}`);
         }
     };
-
 
     // Article Controller
 
@@ -230,25 +231,22 @@ export class BlogMangmentcotroller {
     // Seatrch About Article 
     public SearchArticle = async (req: Request, res: Response, next: NextFunction) => {
         try {
-       
-          const searchTerm = req.query.search_term as string; 
-          const pageNumber = Number(req.query.page) || 1;
-    
-       
-          const articles = await this.search.SearchArticle(pageNumber, searchTerm);
-    
-          if (typeof articles === 'string') {
-            return res.status(400).json({ message: articles });
-          }
-    
-          res.status(200).json({
-            message: 'Articles fetched successfully',
-            data: articles,
-          });
-        } catch (error) {
-          next(error);  // Send the error to the next middleware
-        }
-      };
-    //
 
+            const searchTerm: string = String(req.query.search_term);
+            const pageNumber = Number(req.query.page) || 1;
+            const articles = await this.search.SearchArticle(pageNumber, searchTerm);
+            var message: string = `Articles fetched successfully`;
+
+            if (articles.searchResults.length === 0) {
+                message = `Not Found Articles`;
+            }
+            res.status(200).json({
+                message: message,
+                data: articles,
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    };
 }
