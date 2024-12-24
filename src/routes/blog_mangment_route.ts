@@ -31,33 +31,39 @@ export class BlogRoute implements Routes {
     this.initializeTagRoutes();
     this.initializeArticleRoutes();
     this.initializeArticleTagRoutes();
+    this.initializeSearchArticleRoute();
   }
 
   private initializeBlogRoutes(): void {
-    this.router.get(this.pathBlog, AuthMiddleware, this.blogController.getAllBlogs);
-    this.router.post(this.pathBlog, AuthMiddleware, ValidationMiddleware(CreateBlogDto), this.blogController.createNewblog);
-    this.router.put(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware, ValidationMiddleware(UpdateBlogDto), this.blogController.updateBlog);
-    this.router.delete(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware, this.blogController.deleteBlog);
+    this.router.get(this.pathBlog, AuthMiddleware, Authorization(57),this.blogController.getAllBlogs);
+    this.router.post(this.pathBlog, AuthMiddleware, Authorization(58),ValidationMiddleware(CreateBlogDto), this.blogController.createNewblog);
+    this.router.put(`${this.pathBlog}/${ID_PARAM}`, Authorization(59),AuthMiddleware, ValidationMiddleware(UpdateBlogDto), this.blogController.updateBlog);
+    this.router.delete(`${this.pathBlog}/${ID_PARAM}`, Authorization(60),AuthMiddleware, this.blogController.deleteBlog);
   }
 
   private initializeTagRoutes(): void {
-    this.router.get(this.pathTag, AuthMiddleware, this.blogController.getAllTags);
-    this.router.put(this.pathTag, AuthMiddleware, ValidationMiddleware(CreateTagDto), this.blogController.createNewbTag);
-    this.router.delete(`${this.pathTag}/${ID_PARAM}`, AuthMiddleware, this.blogController.deleteTag);
+    this.router.get(this.pathTag, AuthMiddleware,Authorization(61),this.blogController.getAllTags);
+    this.router.put(this.pathTag, AuthMiddleware,Authorization(62),ValidationMiddleware(CreateTagDto), this.blogController.createNewbTag);
+    this.router.delete(`${this.pathTag}/${ID_PARAM}`,Authorization(63),AuthMiddleware, this.blogController.deleteTag);
   }
 
   private initializeArticleRoutes(): void {
-    this.router.get(this.pathArticle, AuthMiddleware, this.blogController.getAllArticle);
-    this.router.get(`${this.pathArticle}/${ID_PARAM}`, AuthMiddleware, this.blogController.getArticleById);
-    this.router.post(this.pathArticle, AuthMiddleware, this.blogController.createNewbArticle);
-    this.router.put(`${this.pathArticle}/${ID_PARAM}`, AuthMiddleware, this.blogController.updateArticle);
-    this.router.delete(`${this.pathArticle}/${ID_PARAM}`, AuthMiddleware, this.blogController.deleteArticle);
+    this.router.get(this.pathArticle, AuthMiddleware,Authorization(64),this.blogController.getAllArticle);
+    this.router.get(`${this.pathArticle}/${ID_PARAM}`,Authorization(65),AuthMiddleware, this.blogController.getArticleById);
+    this.router.post(this.pathArticle, AuthMiddleware, Authorization(66),this.blogController.createNewbArticle);
+    this.router.put(`${this.pathArticle}/${ID_PARAM}`,Authorization(67),AuthMiddleware, this.blogController.updateArticle);
+    this.router.delete(`${this.pathArticle}/${ID_PARAM}`,Authorization(68),AuthMiddleware, this.blogController.deleteArticle);
   }
 
   private initializeArticleTagRoutes(): void {
-    this.router.get(`${this.pathArticleTags}/${ID_PARAM}`, AuthMiddleware, this.blogController.getTagByArticleId);
-    this.router.post(this.pathArticleTags, AuthMiddleware, this.blogController.createNewTagsForArticle);
-    this.router.delete('/article/:article_id/tags/:tag_id', AuthMiddleware,this.blogController.deleteTagsFromArticle);
+    this.router.get(`${this.pathArticleTags}/${ID_PARAM}`,Authorization(69),AuthMiddleware, this.blogController.getTagByArticleId);
+    this.router.post(this.pathArticleTags, AuthMiddleware,Authorization(70),this.blogController.createNewTagsForArticle);
+    this.router.delete('/article/:article_id/tags/:tag_id',Authorization(71),AuthMiddleware,this.blogController.deleteTagsFromArticle);
+  }
+
+  // External Api 
+  private initializeSearchArticleRoute(): void {
+    this.router.get('/article/search',this.blogController.SearchArticle);
   }
   
 }

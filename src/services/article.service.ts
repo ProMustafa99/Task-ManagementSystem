@@ -65,7 +65,10 @@ export class ArticleService {
                     WHEN ArticleModel.record_status = 3 THEN 'DELETED'
                     ELSE 'UNKNOWN'
                 END
-            `);;
+            `);
+
+            const getBlogName = (field: string) =>
+                sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
 
         const allArticle: Article = await DB.Article.findByPk(article_id, {
             attributes: [
@@ -79,6 +82,7 @@ export class ArticleService {
                 'in_links',
                 'related_links',
                 'cover_image_url',
+                [getBlogName('blog_id'),"Blog Name"],
                 [getStatusName(), 'status'],
                 [getUserName('created_by'), 'author'],
                 [getUserName('updated_by'), 'updatedBy'],

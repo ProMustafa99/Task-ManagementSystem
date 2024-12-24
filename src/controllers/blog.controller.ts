@@ -13,13 +13,15 @@ import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { ArticleTagsService } from '@/services/article_tags.service';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
+import { SearchArticleService } from '@/services/search_article.service';
 
 export class BlogMangmentcotroller {
 
     public blogService = Container.get(BlogService);
     public tagService = Container.get(TagService);
     public articleService = Container.get(ArticleService);
-    public articleTagsService = Container.get(ArticleTagsService)
+    public articleTagsService = Container.get(ArticleTagsService);
+    public search = Container.get(SearchArticleService);
 
 
     // Blog Controller
@@ -214,15 +216,39 @@ export class BlogMangmentcotroller {
     public deleteTagsFromArticle = async (req: RequestWithUser, res: Response, next: NextFunction) => {
         try {
             const user_id = Number(req.user.uid);
-            const article_id = Number(req.params.article_id); 
+            const article_id = Number(req.params.article_id);
             const tag_id = Number(req.params.tag_id);
 
             const result = await this.articleTagsService.deleteTagsFormArticle(article_id, tag_id, user_id);
-    
+
             res.status(200).json({ message: `Tag ${tag_id} successfully removed from article ${article_id}`, data: result });
         } catch (error) {
             next(error);
         }
     };
+
+    // Seatrch About Article 
+    public SearchArticle = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+       
+          const searchTerm = req.query.search_term as string; 
+          const pageNumber = Number(req.query.page) || 1;
     
+       
+          const articles = await this.search.SearchArticle(pageNumber, searchTerm);
+    
+          if (typeof articles === 'string') {
+            return res.status(400).json({ message: articles });
+          }
+    
+          res.status(200).json({
+            message: 'Articles fetched successfully',
+            data: articles,
+          });
+        } catch (error) {
+          next(error);  // Send the error to the next middleware
+        }
+      };
+    //
+
 }
