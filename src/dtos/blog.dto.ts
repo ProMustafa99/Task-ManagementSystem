@@ -20,6 +20,10 @@ export class CreateBlogDto {
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
     public url_ar: string;
+
+    @IsOptional()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
+    public record_status?: number;
 }
 
 
@@ -45,8 +49,8 @@ export class UpdateBlogDto {
     public url_ar?: string;
 
     @IsOptional()
-    @IsNumber()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
     public record_status?: number;
-    
+
 }
 
