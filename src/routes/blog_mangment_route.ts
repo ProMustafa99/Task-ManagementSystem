@@ -18,6 +18,7 @@ export class BlogRoute implements Routes {
   public pathTag = '/tags';
   public pathArticle = '/article';
   public pathArticleTags = '/article/tags';
+  public pathExtenrnal ='/blog-articles';
   public router = Router();
   public blogController: BlogMangmentcotroller;
 
@@ -63,7 +64,8 @@ export class BlogRoute implements Routes {
 
   // External Api 
   private initializeSearchArticleRoute(): void {
-    this.router.get('/blog-articles', this.blogController.SearchArticle);
+    this.router.get(`${this.pathExtenrnal}`, this.blogController.SearchArticle);
+    this.router.get(`${this.pathExtenrnal}/${ID_PARAM}`, this.blogController.SearchArticleById);
   }
 
 }

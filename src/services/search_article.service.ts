@@ -2,13 +2,15 @@ import { DB } from '@/database';
 import { Service } from 'typedi';
 import { QueryTypes } from 'sequelize';
 import { Article } from '@/interfaces/article.interface';
+import sequelize, { Op, where } from 'sequelize';
+
 
 // ###### Note Get example from Yazan
 
 @Service()
 export class SearchArticleService {
 
-    public async SearchArticle(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number;countPerPage: number }> {
+    public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number }> {
         const sequelize = DB.sequelize;
         const limit = 15;
         const offset = (pageNumber - 1) * limit;
@@ -64,4 +66,53 @@ export class SearchArticleService {
             searchResults,
         };
     }
-}
+
+    public async SearchArticleById(article_id: number): Promise<Article | string> {
+        const getBlogName = (field: string) => sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
+
+        const allArticle = await DB.Article.findByPk(article_id, {
+            attributes: [
+                [getBlogName('blog_id'), "Blog Name"],
+                'description_en',
+                'description_ar',
+                'in_links',
+                'related_links',
+                'cover_image_url',
+            ],
+        });
+
+        if (!allArticle) {
+            return "There are no Article";
+        }
+
+        const reg = (description: string, in_link) => {
+            const reguler = /@(\w+)/g;
+            const matches = description.match(reguler);
+        
+            if (matches) {
+                matches.forEach((item) => {
+                    const lowerCaseItem = item.toLowerCase();
+                    if (in_link?.hasOwnProperty(lowerCaseItem)) {
+                        description = description.replace(item, in_link[lowerCaseItem]);
+                    }
+                });
+            }
+            return description;
+        };
+        
+        const dataValues = allArticle.dataValues;
+        const { description_en, description_ar, in_links } = dataValues;
+        
+        const updatedDescriptionEn = reg(description_en, in_links[0]);
+        const updatedDescriptionAr = reg(description_ar, in_links[0]);
+    
+        const { in_links: _, ...cleanedArticle } = dataValues;
+
+        cleanedArticle.description_en = updatedDescriptionEn;
+        cleanedArticle.description_ar = updatedDescriptionAr;
+        
+        return cleanedArticle;
+        
+    }
+
+}    

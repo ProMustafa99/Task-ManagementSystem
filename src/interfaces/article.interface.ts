@@ -9,7 +9,7 @@ export interface Article extends Record {
     url_ar: string;
     description_en: string;
     description_ar: string;
-    in_links: string[] | null; 
+    in_links?: string[] | null; 
     related_links: string[]| null;
     cover_image_url: string;
 }

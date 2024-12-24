@@ -234,7 +234,7 @@ export class BlogMangmentcotroller {
 
             const searchTerm: string = String(req.query.search_term);
             const pageNumber = Number(req.query.page) || 1;
-            const articles = await this.search.SearchArticle(pageNumber, searchTerm);
+            const articles = await this.search.SearchArticles(pageNumber, searchTerm);
             var message: string = `Articles fetched successfully`;
 
             if (articles.searchResults.length === 0) {
@@ -246,6 +246,18 @@ export class BlogMangmentcotroller {
             });
 
         } catch (error) {
+            next(error);
+        }
+    };
+
+    public SearchArticleById = async (req: Request, res: Response, next: NextFunction) => {
+
+        try {
+            const article_id = Number(req.params.id);
+            const findArticle: Article | string = await this.search.SearchArticleById(article_id);
+            res.status(200).json({ data: findArticle });
+        }
+        catch (error) {
             next(error);
         }
     };

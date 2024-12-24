@@ -48,7 +48,6 @@ export class ArticleService {
             offset,
             limit: 15,
         });
-
         return allArticle.length ? allArticle : "There are no Article";
     }
 
@@ -67,8 +66,8 @@ export class ArticleService {
                 END
             `);
 
-            const getBlogName = (field: string) =>
-                sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
+        const getBlogName = (field: string) =>
+            sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
 
         const allArticle: Article = await DB.Article.findByPk(article_id, {
             attributes: [
@@ -82,7 +81,7 @@ export class ArticleService {
                 'in_links',
                 'related_links',
                 'cover_image_url',
-                [getBlogName('blog_id'),"Blog Name"],
+                [getBlogName('blog_id'), "Blog Name"],
                 [getStatusName(), 'status'],
                 [getUserName('created_by'), 'author'],
                 [getUserName('updated_by'), 'updatedBy'],
@@ -96,7 +95,7 @@ export class ArticleService {
     }
 
     public async createNewArticl(article_data: CreateArticleDto, user_id: number): Promise<Article> {
-      
+
         const existingBlog = await DB.Blog.findOne({
             where: {
                 [Op.and]: [
@@ -105,7 +104,7 @@ export class ArticleService {
                 ]
             }
         });
-    
+
 
         if (!existingBlog) {
             throw new HttpException(409, "The Blog doesn't exist or is not active.");
@@ -120,7 +119,7 @@ export class ArticleService {
                 ]
             }
         });
-    
+
         if (existingUrl) {
             if (existingUrl.url_en === article_data.url_en) {
                 throw new HttpException(409, 'An Article with the same URL (English) already exists.');
@@ -133,7 +132,7 @@ export class ArticleService {
         const create_article: Article = await DB.Article.create({ ...article_data, created_by: user_id });
         return create_article;
     }
-    
+
     public async upddateArtilce(article_id: number, article_data: UpdateArticleDto, user_id: number): Promise<string> {
 
         const checkOnArticle: Article = await DB.Article.findByPk(article_id);
