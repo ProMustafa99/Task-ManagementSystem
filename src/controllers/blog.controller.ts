@@ -14,7 +14,7 @@ import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { ArticleTagsService } from '@/services/article_tags.service';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { SearchArticleService } from '@/services/search_article.service';
-import cache from "../utils/cache"; 
+import cache from "../utils/cache";
 
 
 export class BlogMangmentcotroller {
@@ -27,7 +27,6 @@ export class BlogMangmentcotroller {
 
 
     // Blog Controller
-
     public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
@@ -247,7 +246,6 @@ export class BlogMangmentcotroller {
             const cachedData = cache.get<any>(cacheKey);
 
             if (cachedData) {
-                console.error("Cache hit");
                 return res.status(200).json({
                     message: "Cached Articles fetched successfully",
                     data: cachedData,
@@ -261,7 +259,7 @@ export class BlogMangmentcotroller {
                 message = `Not Found Articles`;
             }
             else {
-                cache.set(cacheKey, articles, 300);
+                cache.set(cacheKey, articles, 3600);
             }
 
             res.status(200).json({ message: message, data: articles, });
@@ -273,8 +271,23 @@ export class BlogMangmentcotroller {
     public SearchArticleById = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
+
+
             const article_id = Number(req.params.id);
+            const cachekey = `article:${article_id}`;
+            const cachedData = cache.get<any>(cachekey);
+            var message: string = `Article fetched successfully`;
+
+            if (cachedData) {
+                return res.status(200).json({
+                    message: "Cached Article fetched successfully",
+                    data: cachedData,
+                });
+            }
+
             const findArticle: Article | string = await this.search.SearchArticleById(article_id);
+            cache.set(cachekey, findArticle, 3600);
+            
             res.status(200).json({ data: findArticle });
         }
         catch (error) {
