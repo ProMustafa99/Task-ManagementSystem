@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject } from 'class-validator';
 
 export class CreateArticleDto {
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
@@ -17,12 +17,12 @@ export class CreateArticleDto {
 
     @IsNotEmpty({ message: 'URL in English is required.' })
     @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
-    @IsUrl({ require_protocol: true }, { message: 'URL in English must be a valid URL format with a protocol.' })
+    @IsString({ message: 'The Url in English must be a string.' })
     public url_en: string;
 
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
-    @IsUrl({ require_protocol: true }, { message: 'URL in Arabic must be a valid URL format with a protocol.' })
+    @IsString({ message: 'The Url in Arabic must be a string.' })
     public url_ar: string;
 
     @IsString({ message: 'Description in English must be a string.' })
@@ -35,17 +35,22 @@ export class CreateArticleDto {
 
     @IsOptional()
     @IsArray({ message: 'In links should be an array of strings.' })
-    @IsString({ each: true, message: 'Each in link should be a string.' })
-    public in_links?: string[];
+    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    public in_links?: Record<string, string>[];
 
     @IsOptional()
     @IsArray({ message: 'Related links should be an array of strings.' })
-    @IsString({ each: true, message: 'Each related link should be a string.' })
-    public related_links?: string[];
+    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    public related_links?: Record<string, string>[];
 
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url: string;
+
+    @IsOptional()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    public record_status?: number;
 }
 
 export class UpdateArticleDto {
@@ -81,15 +86,21 @@ export class UpdateArticleDto {
 
     @IsOptional()
     @IsArray({ message: 'In links should be an array of strings.' })
-    @IsString({ each: true, message: 'Each in link should be a string.' })
-    public in_links?: string[];
+    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    public in_links?: Record<string, string>[];
 
     @IsOptional()
     @IsArray({ message: 'Related links should be an array of strings.' })
-    @IsString({ each: true, message: 'Each related link should be a string.' })
-    public related_links?: string[];
+    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    public related_links?: Record<string, string>[];
 
     @IsOptional()
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     public cover_image_url?: string;
+
+    
+    @IsOptional()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    public record_status?: number;
 }

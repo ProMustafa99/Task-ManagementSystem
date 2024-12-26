@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, MaxLength, IsOptional, IsDate } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, MaxLength, IsOptional, IsDate, IsIn } from 'class-validator';
 
 export class CreateBlogDto {
     @IsString({ message: 'Title in English must be a valid string.' })
@@ -23,6 +23,7 @@ export class CreateBlogDto {
 
     @IsOptional()
     @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
 
@@ -50,6 +51,7 @@ export class UpdateBlogDto {
 
     @IsOptional()
     @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 
 }

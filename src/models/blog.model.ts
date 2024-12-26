@@ -50,7 +50,10 @@ export default function (sequelize: Sequelize): typeof BlogModel {
             record_status: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue :RecordStatus.PINDING
+                defaultValue :RecordStatus.PINDING,
+                validate: {
+                    isIn: [[1, 2, 3]],
+                },
             },
             created_on: {
                 type: DataTypes.DATE,

@@ -1,0 +1,32 @@
+{
+  "article:17": {
+    "value": {
+      "Blog Name": "Test Blog",
+      "description_en": "This is the description |link1| with this link",
+      "description_ar": "This is the description /ai-overview with this link in ar",
+      "related_links": [
+        {
+          "url": "/related-topic",
+          "text": "Related blog"
+        }
+      ],
+      "cover_image_url": "https://example.com/images/ai-trends.jpg"
+    },
+    "expiry": 1735203927927
+  },
+  "article:20": {
+    "value": {
+      "Blog Name": "Test Blog",
+      "description_en": "This is the description |link1| with this link",
+      "description_ar": "This is the description /arlink with this link in ar",
+      "related_links": [
+        {
+          "url": "/related-topic",
+          "text": "Related blog"
+        }
+      ],
+      "cover_image_url": "https://example.com/images/ai-trends.jpg"
+    },
+    "expiry": 1735205838882
+  }
+}

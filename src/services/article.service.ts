@@ -107,7 +107,7 @@ export class ArticleService {
 
 
         if (!existingBlog) {
-            throw new HttpException(409, "The Blog doesn't exist or is not active.");
+            throw new HttpException(404, "The Blog doesn't exist or is not active.");
         }
 
 

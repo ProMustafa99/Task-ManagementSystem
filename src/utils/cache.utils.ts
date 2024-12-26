@@ -11,7 +11,7 @@ class InMemoryCache {
         if (!entry) return null;
 
         if (Date.now() > entry.expiry) {
-            this.cacheStore.delete(key); // Delete expired cache entry
+            this.cacheStore.delete(key);
             return null;
         }
 
@@ -19,7 +19,7 @@ class InMemoryCache {
     }
 
     public set<T>(key: string, value: T, ttl: number): void {
-        const expiry = Date.now() + ttl * 1000; 
+        const expiry = Date.now() + ttl * 1000;
         this.cacheStore.set(key, { value, expiry });
     }
 
@@ -34,3 +34,4 @@ class InMemoryCache {
 
 const cache = new InMemoryCache();
 export default cache;
+
