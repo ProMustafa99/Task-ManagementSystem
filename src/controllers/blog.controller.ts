@@ -270,7 +270,7 @@ export class BlogMangmentcotroller {
             } 
             else {
                 // You can cache the result if needed
-                // cache.set(cacheKey, articles, 3000);
+                cache.set(cacheKey, articles, 3000);
             }
     
             res.status(200).json({ message: message, data: articles });
