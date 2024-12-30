@@ -12,10 +12,7 @@ export class SearchArticleService {
     private in_link: any;
     private updatedDescriptionEn: string;
     private updatedDescriptionAr: string;
-    private cleanedArticle: any;
-
-
-
+    
     private replaceLinksInDescription = (description: string, in_link) => {
         const reguler = /@(\w+)/g;
         const matches = description.match(reguler);
@@ -29,7 +26,6 @@ export class SearchArticleService {
         }
         return description;
     }
-
 
     public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number }> {
         const sequelize = DB.sequelize;
@@ -127,7 +123,6 @@ export class SearchArticleService {
             searchResults,
         };
     }
-
 
     public async SearchArticleById(article_id: number): Promise<Article | string> {
         const getBlogName = (field: string) => sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);

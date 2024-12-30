@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { CreateUserDto ,LoginDto } from '@dtos/users.dto';
+import { CreateUserDto, LoginDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { AuthService } from '@services/auth.service';
 
 export class AuthController {
-  
+
   public auth = Container.get(AuthService);
 
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,9 +24,14 @@ export class AuthController {
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: LoginDto = req.body;
-      const { cookie, findUser } = await this.auth.login(userData);
-      res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
+
+      const { token, findUser } = await this.auth.login(userData);
+
+      res.status(200).json({
+        data: findUser,
+        token,
+        message: 'Login successful',
+      });
     } catch (error) {
       next(error);
     }
