@@ -43,14 +43,14 @@ export class SearchArticleService {
                 GROUP_CONCAT(tag.title_en) AS tags
             FROM article
             JOIN blog ON blog.id = article.blog_id
-            LEFT JOIN article_tags ON article_tags.article_id = article.id
+            LEFT JOIN article_tags ON article_tags.article_id = article.id AND  article_tags.record_status =2
             LEFT JOIN tag ON tag.id = article_tags.tag_id
             WHERE
                 (
                 MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                ) AND article.record_status = 2 AND article_tags.record_status =2
+                ) AND article.record_status = 2 
             GROUP BY article.id
             LIMIT :limit OFFSET :offset
         ` : `
@@ -82,7 +82,7 @@ export class SearchArticleService {
                 MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                ) AND article.record_status = 2 AND article_tags.record_status =2;
+                ) AND article.record_status = 2;
         ` : `
             SELECT COUNT(DISTINCT article.id) AS totalCount
             FROM article
