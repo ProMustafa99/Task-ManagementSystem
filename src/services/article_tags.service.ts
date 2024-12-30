@@ -12,10 +12,10 @@ export class ArticleTagsService {
     public async getTagByArticleId(article_id: number, pageNumber: number): Promise<ArticleTagModel[] | string> {
 
         const existingArticle = await DB.Article.findOne({
-            where:{
-                [Op.and]:[
-                    {id:article_id},
-                    {record_status:2}
+            where: {
+                [Op.and]: [
+                    { id: article_id },
+                    { record_status: 2 }
                 ]
             }
         });
@@ -74,10 +74,10 @@ export class ArticleTagsService {
         });
 
         const checkOnTag = await DB.Tag.findOne({
-            where:{
-                [Op.and]:[
-                    {id:tag_id},
-                    {record_status:2}
+            where: {
+                [Op.and]: [
+                    { id: tag_id },
+                    { record_status: 2 }
                 ]
             }
         });
@@ -87,6 +87,19 @@ export class ArticleTagsService {
 
         if (!checkOnTag)
             throw new HttpException(404, "Tag doesn't exist");
+
+        const existingArticleTag = await DB.ArticleTag.findOne({
+            where: {
+                [Op.and]: [
+                    { article_id: article_id },
+                    { tag_id: tag_id }
+                ]
+            }
+        });
+
+        if (existingArticleTag) {
+            throw new HttpException(409, 'This article and tag combination already exists');
+        }
 
         const create_tagsforAtricle: ArticleTagModel = await DB.ArticleTag.create({ ...article_tag_data, created_by: user_id });
         return create_tagsforAtricle;
