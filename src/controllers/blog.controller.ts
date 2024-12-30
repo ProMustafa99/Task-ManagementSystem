@@ -279,7 +279,6 @@ export class BlogMangmentcotroller {
         }
     };
     
-
     public SearchArticleById = async (req: Request, res: Response, next: NextFunction) => {
         try {
 

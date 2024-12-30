@@ -18,6 +18,7 @@ export class CreateArticleTagDto {
 export class UpdateArticleTagDto {
     @IsOptional()
     @IsNumber({}, { message: 'Tag ID must be a valid number.' })
+    @IsNotEmpty({ message: 'Tag ID is required.' })
     public tag_id?: number;
 
     @IsOptional()

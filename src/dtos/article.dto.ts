@@ -36,11 +36,14 @@ export class CreateArticleDto {
     @IsOptional()
     @IsArray({ message: 'In links should be an array of strings.' })
     @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsNotEmpty({ message: 'Description in Arabic is required.' })
+    @IsNotEmpty({ message: 'In links cannot be empty if provided.' })
     public in_links?: Record<string, string>[];
 
     @IsOptional()
     @IsArray({ message: 'Related links should be an array of strings.' })
     @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsNotEmpty({ message: 'Related Links cannot be empty if provided.' })
     public related_links?: Record<string, string>[];
 
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
@@ -56,46 +59,56 @@ export class CreateArticleDto {
 export class UpdateArticleDto {
     @IsOptional()
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
+    @IsNotEmpty({ message: 'Blog ID is required.' })
     public blog_id?: number;
 
     @IsOptional()
     @IsString({ message: 'Title in English must be a string.' })
     @MaxLength(255, { message: 'Title in English should not exceed 255 characters.' })
+    @IsNotEmpty({ message: 'Title in English is required.' })
     public title_en?: string;
 
     @IsOptional()
     @IsString({ message: 'Title in Arabic must be a string.' })
     @MaxLength(255, { message: 'Title in Arabic should not exceed 255 characters.' })
+    @IsNotEmpty({ message: 'Title in Arabic is required.' })
     public title_ar?: string;
 
     @IsOptional()
     @IsUrl({ require_protocol: true }, { message: 'URL in English must be a valid URL format with a protocol.' })
+    @IsNotEmpty({ message: 'URL in English is required.' })
     public url_en?: string;
 
     @IsOptional()
     @IsUrl({ require_protocol: true }, { message: 'URL in Arabic must be a valid URL format with a protocol.' })
+    @IsNotEmpty({ message: 'URL in Arabic is required.' })
     public url_ar?: string;
 
     @IsOptional()
     @IsString({ message: 'Description in English must be a string.' })
+    @IsNotEmpty({ message: 'Description in English is required.' })
     public description_en?: string;
 
     @IsOptional()
     @IsString({ message: 'Description in Arabic must be a string.' })
+    @IsNotEmpty({ message: 'Description in Arabic is required.' })
     public description_ar?: string;
 
     @IsOptional()
     @IsArray({ message: 'In links should be an array of strings.' })
     @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsNotEmpty({ message: 'In links cannot be empty if provided.' })
     public in_links?: Record<string, string>[];
 
     @IsOptional()
     @IsArray({ message: 'Related links should be an array of strings.' })
     @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsNotEmpty({ message: 'Related Links cannot be empty if provided.' })
     public related_links?: Record<string, string>[];
 
     @IsOptional()
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
+    @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url?: string;
 
     
