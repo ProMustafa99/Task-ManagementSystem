@@ -10,8 +10,14 @@ import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 export class ArticleService {
 
     public async getAllArticl(pageNumber: number): Promise<Article[] | string> {
+        const articlesPerPage = 15;
+        const totalArticlesCount = await DB.Article.count();
+        const maxPages = Math.ceil(totalArticlesCount / articlesPerPage);
+        if (pageNumber <= 0 || pageNumber > maxPages) {
+            return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
+        }
 
-        const offset = (pageNumber - 1) * 15;
+        const offset = (pageNumber - 1) * articlesPerPage;
 
         const getUserName = (field: string) =>
             sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = ArticleModel.${field})`);
@@ -24,7 +30,7 @@ export class ArticleService {
                     WHEN ArticleModel.record_status = 3 THEN 'DELETED'
                     ELSE 'UNKNOWN'
                 END
-            `);;
+            `);
 
         const allArticle: Article[] = await DB.Article.findAll({
             attributes: [
@@ -46,9 +52,10 @@ export class ArticleService {
                 ['deleted_on', "deletedOn"],
             ],
             offset,
-            limit: 15,
+            limit: articlesPerPage,
         });
-        return allArticle.length ? allArticle : "There are no Article";
+
+        return allArticle.length ? allArticle : "There are no Articles";
     }
 
     public async getArticlById(article_id: number): Promise<Article | string> {

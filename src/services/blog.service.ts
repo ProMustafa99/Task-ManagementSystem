@@ -10,10 +10,19 @@ import { CreateBlogDto, UpdateBlogDto } from '@/dtos/blog.dto';
 export class BlogService {
 
     public async getAllBlog(pageNumber: number): Promise<Blog[] | string> {
-        const offset = (pageNumber - 1) * 15;
+        const blogsPerPage = 15;
+
+        const totalBlogsCount = await DB.Blog.count();
+        const maxPages = Math.ceil(totalBlogsCount / blogsPerPage);
+        if (pageNumber <= 0 || pageNumber > maxPages) {
+            return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
+        }
+
+        const offset = (pageNumber - 1) * blogsPerPage;
 
         const getUserName = (field: string) =>
             sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = BlogModel.${field})`);
+
         const getStatusName = () =>
             sequelize.literal(`
                 CASE
@@ -22,7 +31,7 @@ export class BlogService {
                     WHEN BlogModel.record_status = 3 THEN 'DELETED'
                     ELSE 'UNKNOWN'
                 END
-            `);;
+            `);
 
         const allBlog: Blog[] = await DB.Blog.findAll({
             attributes: [
@@ -35,11 +44,12 @@ export class BlogService {
                 ['deleted_on', "deletedOn"],
             ],
             offset,
-            limit: 15,
+            limit: blogsPerPage,
         });
 
         return allBlog.length ? allBlog : "There are no blogs";
     }
+
 
     public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {
 
@@ -53,7 +63,7 @@ export class BlogService {
                 ]
             }
         });
-    
+
         if (existingUrl) {
             if (existingUrl.url_en === blog_data.url_en) {
                 throw new HttpException(409, 'A Blog with the same URL (English) already exists.');
@@ -62,13 +72,13 @@ export class BlogService {
                 throw new HttpException(409, 'A Blog with the same URL (Arabic) already exists.');
             }
         }
-    
+
         const create_blog: Blog = await DB.Blog.create({ ...blog_data, created_by: user_id });
         return create_blog;
     }
-    
+
     public async updateBlog(blog_id: number, blog_data: UpdateBlogDto, user_id: number): Promise<string> {
-        
+
         const checkOnBlog: Blog = await DB.Blog.findByPk(blog_id);
 
         if (!checkOnBlog) {
@@ -98,14 +108,14 @@ export class BlogService {
             { where: { id: blog_id } }
         );
 
-        if (blog_data.record_status ===1) {
+        if (blog_data.record_status === 1) {
             const updateArticel = await DB.Article.update(
                 { record_status: blog_data.record_status, updated_by: user_id, updated_on: new Date() },
                 { where: { blog_id: blog_id } }
             );
         }
 
-        if (blog_data.record_status ===3) {
+        if (blog_data.record_status === 3) {
             const updateArticel = await DB.Article.update(
                 { record_status: blog_data.record_status, deleted_by: user_id, deleted_on: new Date() },
                 { where: { blog_id: blog_id } }

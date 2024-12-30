@@ -1,11 +1,9 @@
 import { DB } from '@/database';
 import { HttpException } from '@/exceptions/httpException';
-import { Blog } from '@/interfaces/blog.interface';
 import { Service } from 'typedi';
 import sequelize, { Op, where } from 'sequelize';
 import { CreateTagDto } from '@/dtos/tag.dto';
 import { Tags } from '@/interfaces/tags.interface';
-import { Tag } from 'swagger-jsdoc';
 
 
 @Service()
@@ -13,7 +11,13 @@ export class TagService {
 
     public async getAllTag(pageNumber: number): Promise<Tags[] | string> {
 
-        const offset = (pageNumber - 1) * 15;
+        const tagsPerPage = 15;
+        const totalTagsCount = await DB.Tag.count();
+        const maxPages = Math.ceil(totalTagsCount / tagsPerPage);
+        if (pageNumber <= 0 || pageNumber > maxPages) {
+            return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
+        }
+        const offset = (pageNumber - 1) * tagsPerPage;
 
         const getUserName = (field: string) =>
             sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = TagModel.${field})`);
@@ -26,7 +30,7 @@ export class TagService {
                     WHEN TagModel.record_status = 3 THEN 'DELETED'
                     ELSE 'UNKNOWN'
                 END
-            `);;
+            `);
 
         const allTag: Tags[] = await DB.Tag.findAll({
             attributes: [
@@ -41,11 +45,12 @@ export class TagService {
                 ['deleted_on', "deletedOn"],
             ],
             offset,
-            limit: 15,
+            limit: tagsPerPage,
         });
 
         return allTag.length ? allTag : "There are no Tags";
     }
+
 
     public async createNewTag(tag_data: CreateTagDto, user_id: number): Promise<Tags> {
 
