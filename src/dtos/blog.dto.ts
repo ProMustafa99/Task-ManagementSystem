@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, MaxLength, IsOptional, IsDate, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, MaxLength, IsOptional, Matches, IsIn } from 'class-validator';
 
 export class CreateBlogDto {
     @IsString({ message: 'Title in English must be a valid string.' })
@@ -14,11 +14,13 @@ export class CreateBlogDto {
     @IsString({ message: 'URL in English must be a valid string.' })
     @IsNotEmpty({ message: 'URL in English is required.' })
     @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
+    @Matches(/^\/.*/, { message: 'URL in English must start with a forward slash (e.g., /example).' })
     public url_en: string;
 
     @IsString({ message: 'URL in Arabic must be a valid string.' })
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
+    @Matches(/^\/.*/, { message: 'URL in Arabic must start with a forward slash (e.g., /example).' })
     public url_ar: string;
 
     @IsOptional()
@@ -46,12 +48,14 @@ export class UpdateBlogDto {
     @IsString({ message: 'URL in English must be a valid string.' })
     @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
     @IsNotEmpty({ message: 'URL in English is required.' })
+    @Matches(/^\/.*/, { message: 'URL in English must start with a forward slash (e.g., /example).' })
     public url_en?: string;
 
     @IsOptional()
     @IsString({ message: 'URL in Arabic must be a valid string.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
+    @Matches(/^\/.*/, { message: 'URL in Arabic must start with a forward slash (e.g., /example).' })
     public url_ar?: string;
 
     @IsOptional()

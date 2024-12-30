@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject ,Matches,ValidateIf } from 'class-validator';
 
 export class CreateArticleDto {
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
@@ -18,11 +18,13 @@ export class CreateArticleDto {
     @IsNotEmpty({ message: 'URL in English is required.' })
     @MaxLength(255, { message: 'URL in English should not exceed 255 characters.' })
     @IsString({ message: 'The Url in English must be a string.' })
+    @Matches(/^\/.*/, { message: 'URL in English must start with a forward slash (e.g., /example).' })
     public url_en: string;
 
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
     @IsString({ message: 'The Url in Arabic must be a string.' })
+    @Matches(/^\/.*/, { message: 'URL in Arabic must start with a forward slash (e.g., /example).' })
     public url_ar: string;
 
     @IsString({ message: 'Description in English must be a string.' })
@@ -38,13 +40,15 @@ export class CreateArticleDto {
     @IsObject({ each: true, message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'Description in Arabic is required.' })
     @IsNotEmpty({ message: 'In links cannot be empty if provided.' })
-    public in_links?: Record<string, string>[];
+    @ValidateIf((obj) => obj.in_links !== undefined)
+    public in_links?: Record<string, string>;
 
     @IsOptional()
     @IsArray({ message: 'Related links should be an array of strings.' })
     @IsObject({ each: true, message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'Related Links cannot be empty if provided.' })
-    public related_links?: Record<string, string>[];
+    @ValidateIf((obj) => obj.in_links !== undefined)
+    public related_links?: Record<string, string>;
 
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     @IsNotEmpty({ message: 'Cover image URL is required.' })
@@ -77,11 +81,13 @@ export class UpdateArticleDto {
     @IsOptional()
     @IsUrl({ require_protocol: true }, { message: 'URL in English must be a valid URL format with a protocol.' })
     @IsNotEmpty({ message: 'URL in English is required.' })
+    @Matches(/^\/.*/, { message: 'URL in English must start with a forward slash (e.g., /example).' })
     public url_en?: string;
 
     @IsOptional()
     @IsUrl({ require_protocol: true }, { message: 'URL in Arabic must be a valid URL format with a protocol.' })
     @IsNotEmpty({ message: 'URL in Arabic is required.' })
+    @Matches(/^\/.*/, { message: 'URL in Arabic must start with a forward slash (e.g., /example).' })
     public url_ar?: string;
 
     @IsOptional()
@@ -117,3 +123,4 @@ export class UpdateArticleDto {
     @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
+

@@ -98,13 +98,25 @@ export class BlogService {
             { where: { id: blog_id } }
         );
 
+        if (blog_data.record_status ===1) {
+            const updateArticel = await DB.Article.update(
+                { record_status: blog_data.record_status, updated_by: user_id, updated_on: new Date() },
+                { where: { blog_id: blog_id } }
+            );
+        }
+
+        if (blog_data.record_status ===3) {
+            const updateArticel = await DB.Article.update(
+                { record_status: blog_data.record_status, deleted_by: user_id, deleted_on: new Date() },
+                { where: { blog_id: blog_id } }
+            );
+        }
         return "The blog has been updated ";
     }
 
     public async deleteBlog(blog_id: number, user_id: number): Promise<Blog | string> {
 
         const checkOnBlog: Blog = await DB.Blog.findByPk(blog_id);
-        console.log(checkOnBlog);
 
         if (!checkOnBlog)
             throw new HttpException(404, "Blog doesn't exist");
