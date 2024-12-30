@@ -51,9 +51,13 @@ export class TagService {
         return allTag.length ? allTag : "There are no Tags";
     }
 
-    public async createNewTag(tag_data: CreateTagDto, user_id: number): Promise<Tags> {
+    public async createNewTag(tag_data: CreateTagDto, user_id: number) {
+
+        tag_data.title_en = tag_data.title_en.toLowerCase();
+        tag_data.title_ar = tag_data.title_ar.toLowerCase();
 
         const existingTag = await DB.Tag.findOne({
+            raw :true,
             where: {
                 [Op.or]: [
                     { title_en: tag_data.title_en },
@@ -70,6 +74,7 @@ export class TagService {
                 throw new HttpException(409, 'A Tag with the same Title (Arabic) already exists.');
             }
         }
+
         const create_tag: Tags = await DB.Tag.create({ ...tag_data, created_by: user_id });
         return create_tag;
     }
@@ -92,7 +97,7 @@ export class TagService {
                     { where: { tag_id: tag_id } }
                 );
             });
-            
+
         return `The Tag has been deleted ID Tag ${tag_id}`;
     }
 }
