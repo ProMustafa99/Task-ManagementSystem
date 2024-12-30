@@ -51,7 +51,6 @@ export class TagService {
         return allTag.length ? allTag : "There are no Tags";
     }
 
-
     public async createNewTag(tag_data: CreateTagDto, user_id: number): Promise<Tags> {
 
         const existingTag = await DB.Tag.findOne({
@@ -87,10 +86,13 @@ export class TagService {
         }
 
         await DB.Tag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { id: tag_id } })
-            .then(() => {
-                // Delete the 
+            .then(async () => {
+                await DB.ArticleTag.update(
+                    { record_status: 3, deleted_by: user_id, deleted_on: new Date() },
+                    { where: { tag_id: tag_id } }
+                );
             });
-
+            
         return `The Tag has been deleted ID Tag ${tag_id}`;
     }
 }

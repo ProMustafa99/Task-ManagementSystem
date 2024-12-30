@@ -50,7 +50,7 @@ export class SearchArticleService {
                 MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                ) AND article.record_status = 2
+                ) AND article.record_status = 2 AND article_tags.record_status =2
             GROUP BY article.id
             LIMIT :limit OFFSET :offset
         ` : `
@@ -82,7 +82,7 @@ export class SearchArticleService {
                 MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                ) AND article.record_status = 2;
+                ) AND article.record_status = 2 AND article_tags.record_status =2;
         ` : `
             SELECT COUNT(DISTINCT article.id) AS totalCount
             FROM article
@@ -161,5 +161,4 @@ export class SearchArticleService {
         return dataValues;
 
     }
-
 }    
