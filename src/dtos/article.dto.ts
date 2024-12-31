@@ -1,7 +1,7 @@
 import { registerDecorator, IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject, Matches, ValidateIf, ValidationOptions, ValidationArguments } from 'class-validator';
 
 
-export function MatchesSlash(validationOptions?: ValidationOptions) {
+function MatchesSlash(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
             name: 'matchesSlash',
@@ -10,17 +10,13 @@ export function MatchesSlash(validationOptions?: ValidationOptions) {
             options: validationOptions,
             validator: {
                 validate(value: any, args: ValidationArguments) {
-
                     if (typeof value !== 'object' || value === null) return false;
-
                     return Object.values(value).every((val: string) => /^\/.+/.test(val));
                 },
             },
         });
     };
 }
-
-
 
 export class CreateArticleDto {
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
