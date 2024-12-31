@@ -1,4 +1,26 @@
-import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject ,Matches,ValidateIf } from 'class-validator';
+import { registerDecorator, IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject, Matches, ValidateIf, ValidationOptions, ValidationArguments } from 'class-validator';
+
+
+export function MatchesSlash(validationOptions?: ValidationOptions) {
+    return function (object: Object, propertyName: string) {
+        registerDecorator({
+            name: 'matchesSlash',
+            target: object.constructor,
+            propertyName: propertyName,
+            options: validationOptions,
+            validator: {
+                validate(value: any, args: ValidationArguments) {
+
+                    if (typeof value !== 'object' || value === null) return false;
+
+                    return Object.values(value).every((val: string) => /^\/.+/.test(val));
+                },
+            },
+        });
+    };
+}
+
+
 
 export class CreateArticleDto {
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
@@ -36,18 +58,17 @@ export class CreateArticleDto {
     public description_ar: string;
 
     @IsOptional()
-    @IsArray({ message: 'In links should be an array of strings.' })
-    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsObject({ message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'Description in Arabic is required.' })
     @IsNotEmpty({ message: 'In links cannot be empty if provided.' })
-    @ValidateIf((obj) => obj.in_links !== undefined)
+    @MatchesSlash({ message: 'All in_link values must start with a forward slash (e.g., /example).' })
     public in_links?: Record<string, string>;
 
     @IsOptional()
-    @IsArray({ message: 'Related links should be an array of strings.' })
-    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsObject({ message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'Related Links cannot be empty if provided.' })
     @ValidateIf((obj) => obj.in_links !== undefined)
+    @MatchesSlash({ message: 'All related_links values must start with a forward slash (e.g., /example).' })
     public related_links?: Record<string, string>;
 
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
@@ -56,7 +77,7 @@ export class CreateArticleDto {
 
     @IsOptional()
     @IsNumber({}, { message: 'Record status must be a valid number.' })
-    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    @IsIn([1, 2, 3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
 
@@ -101,26 +122,26 @@ export class UpdateArticleDto {
     public description_ar?: string;
 
     @IsOptional()
-    @IsArray({ message: 'In links should be an array of strings.' })
-    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsObject({ message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'In links cannot be empty if provided.' })
-    public in_links?: Record<string, string>[];
+    @MatchesSlash({ message: 'All in_link values must start with a forward slash (e.g., /example).' })
+    public in_links?: Record<string, string>;
 
     @IsOptional()
-    @IsArray({ message: 'Related links should be an array of strings.' })
-    @IsObject({ each: true, message: 'Each in link should be an object.' })
+    @IsObject({ message: 'Each in link should be an object.' })
     @IsNotEmpty({ message: 'Related Links cannot be empty if provided.' })
-    public related_links?: Record<string, string>[];
+    @MatchesSlash({ message: 'All related_links values must start with a forward slash (e.g., /example).' })
+    public related_links?: Record<string, string>;
 
     @IsOptional()
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url?: string;
 
-    
+
     @IsOptional()
     @IsNumber({}, { message: 'Record status must be a valid number.' })
-    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    @IsIn([1, 2, 3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
 

@@ -104,7 +104,7 @@ export class ArticleTagsService {
         const create_tagsforAtricle: ArticleTagModel = await DB.ArticleTag.create({ ...article_tag_data, created_by: user_id });
         return create_tagsforAtricle;
     }
-
+    
     public async deleteTagsFormArticle(article_id: number, tag_id: number, user_id: number): Promise<ArticleTagModel | string> {
 
 

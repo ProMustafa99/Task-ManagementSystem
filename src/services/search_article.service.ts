@@ -12,20 +12,23 @@ export class SearchArticleService {
     private in_link: any;
     private updatedDescriptionEn: string;
     private updatedDescriptionAr: string;
-    
+
     private replaceLinksInDescription = (description: string, in_link) => {
         const reguler = /@(\w+)/g;
         const matches = description.match(reguler);
+
+        console.error(`matches ${matches}`);
+
         if (matches) {
             matches.forEach((item) => {
-                const lowerCaseItem = item.toLowerCase();
-                if (in_link?.hasOwnProperty(lowerCaseItem)) {
-                    description = description.replace(item, in_link[lowerCaseItem]);
+                if (in_link?.hasOwnProperty(item)) {
+                    description = description.replace(item, in_link[item]);
                 }
             });
         }
         return description;
-    }
+    };
+
 
     public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number }> {
         const sequelize = DB.sequelize;
@@ -92,6 +95,7 @@ export class SearchArticleService {
         const searchResults: Article[] = await sequelize.query(query, {
             replacements: { search_term, limit, offset },
             type: QueryTypes.SELECT,
+            raw: true,
         });
 
         const totalCountRow = await sequelize.query(countQuery, {
@@ -103,14 +107,11 @@ export class SearchArticleService {
             const description_en = dataValues.description_en;
             const description_ar = dataValues.description_ar;
             const in_link = dataValues.in_links;
-
-            this.updatedDescriptionEn = this.replaceLinksInDescription(description_en, in_link[0]);
-            this.updatedDescriptionAr = this.replaceLinksInDescription(description_ar, in_link[0]);
-
+            this.updatedDescriptionEn = this.replaceLinksInDescription(description_en, in_link);
+            this.updatedDescriptionAr = this.replaceLinksInDescription(description_ar, in_link);
             searchResults[index].description_en = this.updatedDescriptionEn;
             searchResults[index].description_ar = this.updatedDescriptionAr;
-
-            delete searchResults[index].in_links;
+            // delete searchResults[index].in_links;
         });
 
         const totalCount = (totalCountRow[0] as any).totalCount;
