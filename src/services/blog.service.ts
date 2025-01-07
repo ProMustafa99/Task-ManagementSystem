@@ -50,7 +50,6 @@ export class BlogService {
         return allBlog.length ? allBlog : "There are no blogs";
     }
 
-
     public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {
 
         console.error(`Data ----> ${blog_data}`);
