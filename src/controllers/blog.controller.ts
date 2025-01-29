@@ -253,32 +253,32 @@ export class BlogMangmentcotroller {
             const pageNumber = Number(req.query.page) || 1;
             let message: string = `Articles fetched successfully`;
             const cacheKey = `articles:${searchTerm}:${pageNumber}`;
-            
-            const cachedData = cache.get<any>(cacheKey);
-            if (cachedData) {
-                console.log("Cache hit");
-                return res.status(200).json({
-                    message: "Cached Articles fetched successfully",
-                    data: cachedData,
-                });
-            }
-    
+
+            // const cachedData = cache.get<any>(cacheKey);
+            // if (cachedData) {
+            //     console.log("Cache hit");
+            //     return res.status(200).json({
+            //         message: "Cached Articles fetched successfully",
+            //         data: cachedData,
+            //     });
+            // }
+
             const articles = await this.search.SearchArticles(pageNumber, searchTerm);
-    
+
             if (articles.searchResults.length === 0) {
                 message = `Not Found Articles`;
-            } 
+            }
             else {
                 // You can cache the result if needed
                 cache.set(cacheKey, articles, 3000);
             }
-    
+
             res.status(200).json({ message: message, data: articles });
         } catch (error) {
             next(error);
         }
     };
-    
+
     public SearchArticleById = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
@@ -286,22 +286,37 @@ export class BlogMangmentcotroller {
             const cachekey = `article:${article_id}`;
             const cachedData = filecache.get<any>(cachekey);
 
-            if (cachedData) {
-                return res.status(200).json({
-                    message: "Cached Article fetched successfully",
-                    data: cachedData,
-                });
-            }
+            // if (cachedData) {
+            //     return res.status(200).json({
+            //         message: "Cached Article fetched successfully",
+            //         data: cachedData,
+            //     });
+            // }
 
             const findArticle: Article | string = await this.search.SearchArticleById(article_id);
 
-            filecache.set(cachekey, findArticle, 3600);
+            // filecache.set(cachekey, findArticle, 3600);
 
             res.status(200).json({
                 data: findArticle
             });
 
         } catch (error) {
+            next(error);
+        }
+    };
+
+    public GetRelatedArticle = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+
+            const relatedArticle: Article[] |string = await this.search.getRelatedArticle();
+
+            res.status(200).json({
+                data: relatedArticle
+            });
+
+        }
+        catch (error) {
             next(error);
         }
     };

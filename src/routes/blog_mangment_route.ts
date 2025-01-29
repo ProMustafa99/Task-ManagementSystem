@@ -67,6 +67,7 @@ export class BlogRoute implements Routes {
   private initializeSearchArticleRoute(): void {
     this.router.get(`${this.pathExtenrnal}`, this.blogController.SearchArticle);
     this.router.get(`${this.pathExtenrnal}/${ID_PARAM}`, this.blogController.SearchArticleById);
+    this.router.get(`${this.pathExtenrnal}`, this.blogController.GetRelatedArticle);
   }
 
 }

@@ -10,9 +10,11 @@ import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 export class ArticleService {
 
     public async getAllArticl(pageNumber: number): Promise<Article[] | string> {
+
         const articlesPerPage = 15;
         const totalArticlesCount = await DB.Article.count();
         const maxPages = Math.ceil(totalArticlesCount / articlesPerPage);
+        
         if (pageNumber <= 0 || pageNumber > maxPages) {
             return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
         }
@@ -88,7 +90,7 @@ export class ArticleService {
                 'in_links',
                 'related_links',
                 'cover_image_url',
-                [getBlogName('blog_id'), "Blog Name"],
+                [getBlogName('blog_id'), "BlogName"],
                 [getStatusName(), 'status'],
                 [getUserName('created_by'), 'author'],
                 [getUserName('updated_by'), 'updatedBy'],

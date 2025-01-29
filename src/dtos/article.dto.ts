@@ -141,3 +141,9 @@ export class UpdateArticleDto {
     public record_status?: number;
 }
 
+/*
+
+1- when update on article to active and the blog is pedding the article is display (wrong)
+2- when delete the tags from article must me remove it from extrenal link  
+3- 
+*/

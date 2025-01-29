@@ -30,10 +30,10 @@ export class SearchArticleService {
     };
 
 
-    public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number }> {
+    public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number ; itemsPerPage:number }> {
         const sequelize = DB.sequelize;
-        const limit = 15;
-        const offset = (pageNumber - 1) * limit;
+        const itemsPerPage = 6;
+        const offset = (pageNumber - 1) * itemsPerPage;
 
         const query = search_term ? `
             SELECT
@@ -46,8 +46,8 @@ export class SearchArticleService {
                 GROUP_CONCAT(tag.title_en) AS tags
             FROM article
             JOIN blog ON blog.id = article.blog_id
-            LEFT JOIN article_tags ON article_tags.article_id = article.id AND  article_tags.record_status =2
-            LEFT JOIN tag ON tag.id = article_tags.tag_id
+            LEFT JOIN article_tags ON article_tags.article_id = article.id AND  article_tags.record_status = 2
+            LEFT JOIN tag ON tag.id = article_tags.tag_id 
             WHERE
                 (
                 MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
@@ -55,7 +55,7 @@ export class SearchArticleService {
                 OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
                 ) AND article.record_status = 2 
             GROUP BY article.id
-            LIMIT :limit OFFSET :offset
+            LIMIT :itemsPerPage OFFSET :offset
         ` : `
             SELECT
                 article.id,
@@ -71,7 +71,7 @@ export class SearchArticleService {
             LEFT JOIN tag ON tag.id = article_tags.tag_id
             WHERE article.record_status = 2
             GROUP BY article.id
-            LIMIT :limit OFFSET :offset
+            LIMIT :itemsPerPage OFFSET :offset
         `;
 
         const countQuery = search_term ? `
@@ -93,7 +93,7 @@ export class SearchArticleService {
         `;
 
         const searchResults: Article[] = await sequelize.query(query, {
-            replacements: { search_term, limit, offset },
+            replacements: { search_term, itemsPerPage, offset },
             type: QueryTypes.SELECT,
             raw: true,
         });
@@ -116,9 +116,10 @@ export class SearchArticleService {
 
         const totalCount = (totalCountRow[0] as any).totalCount;
         const countPerPage = searchResults.length;
-
+        
         return {
             totalCount,
+            itemsPerPage,
             countPerPage,
             currentPage: pageNumber,
             searchResults,
@@ -128,14 +129,17 @@ export class SearchArticleService {
     public async SearchArticleById(article_id: number): Promise<Article | string> {
         const getBlogName = (field: string) => sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
 
-        const allArticle = await DB.Article.findOne({
+        const article = await DB.Article.findOne({
             attributes: [
-                [getBlogName('blog_id'), 'Blog Name'],
+                [getBlogName('blog_id'), 'blog_name'],
+                "blog_id",
+                'title_en',
                 'description_en',
                 'description_ar',
                 'in_links',
                 'related_links',
                 'cover_image_url',
+
             ],
             where: {
                 id: article_id,
@@ -143,11 +147,47 @@ export class SearchArticleService {
             },
         });
 
-        if (!allArticle) {
-            return "There are no Article";
+        if (!article) {
+            return "Article not found";
         }
 
-        const dataValues = allArticle.dataValues;
+        const relatedArticles = await DB.Article.findAll({
+            attributes: ['id', 'title_en', 'cover_image_url'],
+            where: {
+                blog_id: article.blog_id,
+                id: { [Op.ne]: article_id },
+                record_status: 2
+            },
+
+            limit: 3
+        });
+
+        const lastArticle = await DB.Article.findAll({
+            attributes: ['id', 'title_en', 'cover_image_url'],
+            where: {
+                record_status: 2
+            },
+            order: [['created_on', 'DESC']],
+            limit: 3
+        });
+
+       
+        let relatedArticleTitles = relatedArticles.map((related) => ({
+            id: related.id,
+            title_en: related.title_en,
+            cover_image_url: related.cover_image_url,
+        }));
+
+        if (relatedArticles.length ===0) {
+            relatedArticleTitles = lastArticle.map((related) => ({
+                id: related.id,
+                title_en: related.title_en,
+                cover_image_url: related.cover_image_url,
+            }));
+        }
+
+
+        const dataValues = article.dataValues;
         this.description_en = dataValues.description_en;
         this.description_ar = dataValues.description_ar;
         this.in_link = dataValues.in_links[0];
@@ -157,9 +197,34 @@ export class SearchArticleService {
 
         dataValues.description_en = this.updatedDescriptionEn;
         dataValues.description_ar = this.updatedDescriptionAr;
+
+        dataValues.related_articles = relatedArticleTitles;
+
         delete dataValues.in_links;
 
         return dataValues;
 
+    }
+
+    public async getRelatedArticle(): Promise<Article[] | string> {
+
+
+        const allArticle: Article[] = await DB.Article.findAll({
+            attributes: [
+                'id',
+                'title_en',
+                'title_ar',
+                'url_en',
+                'url_ar',
+                'description_en',
+                'description_ar',
+                'in_links',
+                'related_links',
+                'cover_image_url',
+            ],
+            limit: 3,
+        });
+
+        return allArticle.length ? allArticle : "There are no Articles";
     }
 }    
