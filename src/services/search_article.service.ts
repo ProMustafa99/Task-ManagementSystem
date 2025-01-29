@@ -30,49 +30,49 @@ export class SearchArticleService {
     };
 
 
-    public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number ; itemsPerPage:number }> {
+    public async SearchArticles(pageNumber: number, search_term: string): Promise<{ searchResults: Article[]; totalCount: number; currentPage: number; countPerPage: number; itemsPerPage: number }> {
         const sequelize = DB.sequelize;
         const itemsPerPage = 6;
         const offset = (pageNumber - 1) * itemsPerPage;
 
         const query = search_term ? `
-            SELECT
-                article.id,
-                article.title_en,
-                article.in_links,
-                SUBSTRING (article.description_en,1,150) AS description_en,
-                SUBSTRING (article.description_ar,1,150) AS description_ar,
-                article.cover_image_url,
-                GROUP_CONCAT(tag.title_en) AS tags
-            FROM article
-            JOIN blog ON blog.id = article.blog_id
-            LEFT JOIN article_tags ON article_tags.article_id = article.id AND  article_tags.record_status = 2
-            LEFT JOIN tag ON tag.id = article_tags.tag_id 
-            WHERE
-                (
-                MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
-                OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
-                ) AND article.record_status = 2 
-            GROUP BY article.id
-            LIMIT :itemsPerPage OFFSET :offset
-        ` : `
-            SELECT
-                article.id,
-                article.title_en,
-                article.in_links,
-                SUBSTRING (article.description_en,1,150) AS description_en,
-                SUBSTRING (article.description_ar,1,150) AS description_ar,
-                article.cover_image_url,
-                GROUP_CONCAT(tag.title_en) AS tags
-            FROM article
-            JOIN blog ON blog.id = article.blog_id
-            LEFT JOIN article_tags ON article_tags.article_id = article.id
-            LEFT JOIN tag ON tag.id = article_tags.tag_id
-            WHERE article.record_status = 2
-            GROUP BY article.id
-            LIMIT :itemsPerPage OFFSET :offset
-        `;
+        SELECT
+            article.id,
+            article.title_en,
+            article.in_links,
+            SUBSTRING (article.description_en,1,150) AS description_en,
+            SUBSTRING (article.description_ar,1,150) AS description_ar,
+            article.cover_image_url,
+            GROUP_CONCAT(tag.title_en ORDER BY tag.title_en) AS tags
+        FROM article
+        JOIN blog ON blog.id = article.blog_id
+        LEFT JOIN article_tags ON article_tags.article_id = article.id AND article_tags.record_status = 2
+        LEFT JOIN tag ON tag.id = article_tags.tag_id 
+        WHERE
+            (
+            MATCH (article.title_en, article.description_en) AGAINST (:search_term IN BOOLEAN MODE)
+            OR MATCH (blog.title_en) AGAINST (:search_term IN BOOLEAN MODE)
+            OR MATCH (tag.title_en) AGAINST (:search_term IN BOOLEAN MODE)
+            ) AND article.record_status = 2
+        GROUP BY article.id
+        LIMIT :itemsPerPage OFFSET :offset
+    ` : `
+        SELECT
+            article.id,
+            article.title_en,
+            article.in_links,
+            SUBSTRING (article.description_en,1,150) AS description_en,
+            SUBSTRING (article.description_ar,1,150) AS description_ar,
+            article.cover_image_url,
+            GROUP_CONCAT(tag.title_en ORDER BY tag.title_en) AS tags
+        FROM article
+        JOIN blog ON blog.id = article.blog_id
+        LEFT JOIN article_tags ON article_tags.article_id = article.id
+        LEFT JOIN tag ON tag.id = article_tags.tag_id
+        WHERE article.record_status = 2
+        GROUP BY article.id
+        LIMIT :itemsPerPage OFFSET :offset
+    `;
 
         const countQuery = search_term ? `
             SELECT COUNT(DISTINCT article.id) AS totalCount
@@ -111,12 +111,11 @@ export class SearchArticleService {
             this.updatedDescriptionAr = this.replaceLinksInDescription(description_ar, in_link);
             searchResults[index].description_en = this.updatedDescriptionEn;
             searchResults[index].description_ar = this.updatedDescriptionAr;
-            // delete searchResults[index].in_links;
         });
 
         const totalCount = (totalCountRow[0] as any).totalCount;
         const countPerPage = searchResults.length;
-        
+
         return {
             totalCount,
             itemsPerPage,
@@ -171,14 +170,14 @@ export class SearchArticleService {
             limit: 3
         });
 
-       
+
         let relatedArticleTitles = relatedArticles.map((related) => ({
             id: related.id,
             title_en: related.title_en,
             cover_image_url: related.cover_image_url,
         }));
 
-        if (relatedArticles.length ===0) {
+        if (relatedArticles.length === 0) {
             relatedArticleTitles = lastArticle.map((related) => ({
                 id: related.id,
                 title_en: related.title_en,
