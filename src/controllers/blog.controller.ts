@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { Request, Response, NextFunction } from 'express';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { BlogService } from '@/services/blog.service';
-import { Blog } from '@/interfaces/blog.interface';
+import { Blog, Test } from '@/interfaces/blog.interface';
 import { CreateBlogDto, UpdateBlogDto } from '@/dtos/blog.dto';
 import { TagService } from '@/services/tag.service';
 import { Tags } from '@/interfaces/tags.interface';
@@ -16,6 +16,7 @@ import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { SearchArticleService } from '@/services/search_article.service';
 import cache from '@/utils/cache.utils';
 import filecache from '../utils/file_cach';
+import { PagenationArticle, PagenationBlog, PagenationTags } from '@/interfaces/pagenation.interface';
 
 export class BlogMangmentcotroller {
   public blogService = Container.get(BlogService);
@@ -24,12 +25,24 @@ export class BlogMangmentcotroller {
   public articleTagsService = Container.get(ArticleTagsService);
   public search = Container.get(SearchArticleService);
 
+  private Filter(req: Request) {
+    const page_number = Number(req.query.page) || 1;
+    const status = Number(req.query.record_status) || null;
+    const search = typeof req.query.search === 'string' ? req.query.search : null;
+
+    return {
+      page_number,
+      status,
+      search,
+    };
+  }
+
   // Blog Controller
   public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const page_number = Number(req.query.page) || 1;
-      const findAllBlog: Blog[] | string = await this.blogService.getAllBlog(page_number);
-      res.status(200).json({ data: findAllBlog });
+      const filterBlog = this.Filter(req);
+      const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
+      res.status(200).json(findAllBlog);
     } catch (error) {
       next(error);
     }
@@ -81,9 +94,9 @@ export class BlogMangmentcotroller {
   // Tags Controller
   public getAllTags = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const page_number = Number(req.query.page) || 1;
-      const findAlltags: Tags[] | string = await this.tagService.getAllTag(page_number);
-      res.status(200).json({ data: findAlltags });
+      const filterTags = this.Filter(req);
+      const findAlltags: PagenationTags = await this.tagService.getAllTag(filterTags.page_number, filterTags.status, filterTags.search);
+      res.status(200).json(findAlltags);
     } catch (error) {
       next(error);
     }
@@ -119,12 +132,12 @@ export class BlogMangmentcotroller {
   // Article Controller
   public getAllArticle = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const page_number = Number(req.query.page) || 1;
-      const status = Number (req.query.record_status)|| null;
-      const search = (req.query.search) || null;
-    
-      const findAllArticle: { data: Article[]; articlesPerPage: number; totalArticlesCount: number; maxPages: number } | string =
-        await this.articleService.getAllArticl(page_number ,status ,search);
+      const filterArticle = this.Filter(req);
+      const findAllArticle: PagenationArticle = await this.articleService.getAllArticl(
+        filterArticle.page_number,
+        filterArticle.status,
+        filterArticle.search,
+      );
       res.status(200).json(findAllArticle);
     } catch (error) {
       next(error);

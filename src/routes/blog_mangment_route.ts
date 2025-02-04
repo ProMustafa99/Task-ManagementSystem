@@ -43,8 +43,9 @@ export class BlogRoute implements Routes {
     this.router.delete(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware,Authorization(60),  this.blogController.deleteBlog);
   }
 
+  // AuthMiddleware, Authorization(61),
   private initializeTagRoutes(): void {
-    this.router.get(this.pathTag, AuthMiddleware, Authorization(61), this.blogController.getAllTags);
+    this.router.get(this.pathTag, this.blogController.getAllTags);
     this.router.post(this.pathTag, AuthMiddleware, Authorization(62), ValidationMiddleware(CreateTagDto), this.blogController.createNewbTag);
     this.router.delete(`${this.pathTag}/${ID_PARAM}`, AuthMiddleware, Authorization(63), this.blogController.deleteTag);
   }

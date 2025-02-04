@@ -4,6 +4,7 @@ import { Service } from 'typedi';
 import sequelize, { Op, where } from 'sequelize';
 import { Article } from '@/interfaces/article.interface';
 import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
+import { PagenationArticle } from '@/interfaces/pagenation.interface';
 
 @Service()
 export class ArticleService {
@@ -11,7 +12,8 @@ export class ArticleService {
     pageNumber: number,
     status: number | null,
     search: string | null,
-  ): Promise<{ data: Article[] | string; countPerPage: number; totalCount: number; maxPages: number }> {
+  ): Promise<PagenationArticle> {
+    
     const whereCondition: any = {};
 
     if (status !== null) {
@@ -26,10 +28,7 @@ export class ArticleService {
     const totalCount = status !== null || search !==null ? await DB.Article.count({ where: whereCondition }) : await DB.Article.count();
 
     const maxPages = Math.ceil(totalCount / countPerPage);
-
-    // if (pageNumber <= 0 || pageNumber > maxPages) {
-    //   return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
-    // }
+    
     const offset = (pageNumber - 1) * countPerPage;
 
     const getUserName = (field: string) => sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = ArticleModel.${field})`);
@@ -56,6 +55,7 @@ export class ArticleService {
         'in_links',
         'related_links',
         'cover_image_url',
+        'created_on',
         [getStatusName(), 'status'],
         [getUserName('created_by'), 'author'],
         [getUserName('updated_by'), 'updatedBy'],
