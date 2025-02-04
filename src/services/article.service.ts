@@ -10,19 +10,26 @@ export class ArticleService {
   public async getAllArticl(
     pageNumber: number,
     status: number | null,
-  ): Promise<{ data: Article[]; countPerPage: number; totalCount: number; maxPages: number } | string> {
+    search: string | null,
+  ): Promise<{ data: Article[] | string; countPerPage: number; totalCount: number; maxPages: number }> {
+    const whereCondition: any = {};
+
+    if (status !== null) {
+      whereCondition.record_status = status;
+    }
+
+    if (search) {
+      whereCondition.title_en = { [Op.like]: `%${search}%` };
+    }
+
     const countPerPage = 8;
-  
-    const totalCount = status !== null
-    ? await DB.Article.count({ where: { record_status: status } })
-    : await DB.Article.count();
+    const totalCount = status !== null || search !==null ? await DB.Article.count({ where: whereCondition }) : await DB.Article.count();
 
     const maxPages = Math.ceil(totalCount / countPerPage);
 
-    if (pageNumber <= 0 || pageNumber > maxPages) {
-      return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
-    }
-
+    // if (pageNumber <= 0 || pageNumber > maxPages) {
+    //   return `Invalid page number. Please provide a page number between 1 and ${maxPages}.`;
+    // }
     const offset = (pageNumber - 1) * countPerPage;
 
     const getUserName = (field: string) => sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = ArticleModel.${field})`);
@@ -56,8 +63,8 @@ export class ArticleService {
         [getUserName('deleted_by'), 'deletedBy'],
         ['deleted_on', 'deletedOn'],
       ],
-      where: status !== null ? { record_status: status } : undefined,
 
+      where: whereCondition,
       offset,
       limit: countPerPage,
     });
@@ -69,7 +76,12 @@ export class ArticleService {
           totalCount,
           maxPages,
         }
-      : 'There are no Articles';
+      : {
+          data: 'Not Found',
+          countPerPage,
+          totalCount,
+          maxPages,
+        };
   }
 
   public async getArticlById(article_id: number): Promise<Article | string> {

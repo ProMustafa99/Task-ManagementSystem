@@ -121,8 +121,10 @@ export class BlogMangmentcotroller {
     try {
       const page_number = Number(req.query.page) || 1;
       const status = Number (req.query.record_status)|| null;
+      const search = (req.query.search) || null;
+    
       const findAllArticle: { data: Article[]; articlesPerPage: number; totalArticlesCount: number; maxPages: number } | string =
-        await this.articleService.getAllArticl(page_number ,status);
+        await this.articleService.getAllArticl(page_number ,status ,search);
       res.status(200).json(findAllArticle);
     } catch (error) {
       next(error);
