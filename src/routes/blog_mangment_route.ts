@@ -37,7 +37,7 @@ export class BlogRoute implements Routes {
   }
 
   private initializeBlogRoutes(): void {
-    this.router.get(this.pathBlog, AuthMiddleware, Authorization(57), this.blogController.getAllBlogs);
+    this.router.get(this.pathBlog, this.blogController.getAllBlogs);
     this.router.post(this.pathBlog, AuthMiddleware, Authorization(58), ValidationMiddleware(CreateBlogDto), this.blogController.createNewblog);
     this.router.put(`${this.pathBlog}/${ID_PARAM}`,AuthMiddleware, Authorization(59), ValidationMiddleware(UpdateBlogDto), this.blogController.updateBlog);
     this.router.delete(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware,Authorization(60),  this.blogController.deleteBlog);
@@ -50,7 +50,7 @@ export class BlogRoute implements Routes {
   }
 
   private initializeArticleRoutes(): void {
-    this.router.get(this.pathArticle, AuthMiddleware, Authorization(64), this.blogController.getAllArticle);
+    this.router.get(this.pathArticle, this.blogController.getAllArticle);
     this.router.get(`${this.pathArticle}/${ID_PARAM}`, AuthMiddleware, Authorization(65), this.blogController.getArticleById);
     this.router.post(this.pathArticle, AuthMiddleware, Authorization(66),ValidationMiddleware(CreateArticleDto), this.blogController.createNewbArticle);
     this.router.put(`${this.pathArticle}/${ID_PARAM}`, AuthMiddleware, Authorization(67),ValidationMiddleware(UpdateArticleDto), this.blogController.updateArticle);
