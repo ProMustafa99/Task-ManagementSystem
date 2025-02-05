@@ -44,6 +44,7 @@ export class TagService {
         'id',
         'title_en',
         'title_ar',
+        'created_on',
         [getStatusName(), 'status'],
         [getUserName('created_by'), 'author'],
         [getUserName('updated_by'), 'updatedBy'],

@@ -49,6 +49,7 @@ export class BlogService {
         'title_ar',
         'url_en',
         'url_ar',
+        'created_on',
         [getStatusName(), 'status'],
         [getUserName('created_by'), 'author'],
         [getUserName('updated_by'), 'updatedBy'],

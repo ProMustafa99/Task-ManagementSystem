@@ -7,6 +7,7 @@ import { User } from '@interfaces/users.interface';
 import { Op } from 'sequelize';
 import { Container } from 'typedi';
 import { TaskService } from './task.service';
+import { UserPermission } from '@/interfaces/userPermission.interface';
 
 @Service()
 export class UserService {
@@ -27,11 +28,23 @@ export class UserService {
     return allUser;
   }
 
-  public async findUserById(userId: number): Promise<User> {
+  public async findUserById(userId: number): Promise<{findUser:User;getPermission }> {
+
+    const getPermission = await DB.UserPermission.findOne({
+      attributes: [
+        [DB.Sequelize.fn('GROUP_CONCAT', DB.Sequelize.col('id_permission')), 'permissions'] 
+      ],
+      where: {
+        user_id: userId
+      },
+    });
+
     const findUser: User = await DB.Users.findByPk(userId);
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
-    return findUser;
+    // findUser.permissions = getPermission ? getPermission.get('permissions') : null;
+
+    return {findUser , getPermission};
   }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
