@@ -32,19 +32,20 @@ export class AuthService {
     return createUserData;
   }
 
-  public async login(userData: LoginDto): Promise<{ token: any; findUser: User }> {
+  public async login(userData: LoginDto): Promise<{ cookie: string; findUser: User }> {
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
     if (!findUser) throw new HttpException(409, `This email ${userData.email} was not found`);
 
     const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
     if (!isPasswordMatching) throw new HttpException(409, "Password not matching");
 
-    if (Number(findUser.status) === 0) throw new HttpException(403, "User is not active");
+    if (Number(findUser.status) === 0)  throw new HttpException(403, "User is not active");
 
     const tokenData = createToken(findUser);
-    // const cookie = createCookie(tokenData);
+    const cookie = createCookie(tokenData);
+  
 
-    return { token: tokenData, findUser };
+    return { cookie, findUser };
   }
 
   public async logout(userData: User): Promise<User> {
