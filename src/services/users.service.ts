@@ -21,13 +21,13 @@ export class UserService {
     }
 
     if (search) {
-      whereCondition.title_en = { [Op.like]: `%${search}%` };
+      whereCondition.user_name = { [Op.like]: `%${search}%` };
     }
 
 
     const countPerPage = 5;
 
-    const totalCount = status !== null || search !== null ? await DB.Blog.count({ where: whereCondition }) : await DB.Blog.count();
+    const totalCount = status !== null || search !== null ? await DB.Users.count({ where: whereCondition }) : await DB.Users.count();
 
     const maxPages = Math.ceil(totalCount / countPerPage);
 
@@ -36,11 +36,7 @@ export class UserService {
     const allUser = await DB.Users.findAll({
       offset: offset,
       limit: countPerPage,
-      where: search ? {
-        user_name: {
-          [Op.like]: `%${search}%`
-        }
-      } : undefined
+      where:whereCondition
     });
 
     return allUser.length
