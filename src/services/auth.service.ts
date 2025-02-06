@@ -7,6 +7,7 @@ import { CreateUserDto ,LoginDto } from '@dtos/users.dto';
 import { HttpException } from '@/exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
+import { UserPermission } from '@/interfaces/userPermission.interface';
 
 const createToken = (user: User): TokenData => {
   const dataStoredInToken: DataStoredInToken = { id: user.uid };
@@ -36,8 +37,6 @@ export class AuthService {
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
     if (!findUser) throw new HttpException(409, `This email ${userData.email} was not found`);
 
-    
-
     const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
     if (!isPasswordMatching) throw new HttpException(409, "Password not matching");
 
@@ -55,5 +54,12 @@ export class AuthService {
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
     return findUser;
+  }
+
+  public async getUserPermissions(id: number): Promise<Number[]> {
+    const userPermissions = await DB.UserPermission.findAll({ where: { user_id: id} });
+    const permession = userPermissions.map(p => p.id_permission);
+
+    return permession;
   }
 }

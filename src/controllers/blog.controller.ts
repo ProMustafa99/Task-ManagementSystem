@@ -16,6 +16,9 @@ import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { SearchArticleService } from '@/services/search_article.service';
 import cache from '@/utils/cache.utils';
 import filecache from "../utils/file_cach";
+import { ArticleAndPrevious } from '@/interfaces/article_and_prev.interface';
+import { RelatedArticle } from '@/interfaces/related_article.interface';
+import { PagenationBlog } from '@/interfaces/pagenation.interface';
 
 
 export class BlogMangmentcotroller {
@@ -26,19 +29,40 @@ export class BlogMangmentcotroller {
     public articleTagsService = Container.get(ArticleTagsService);
     public search = Container.get(SearchArticleService);
 
+    private Filter(req: Request) {
+        const page_number = Number(req.query.page) || 1;
+        const status = Number(req.query.record_status) || null;
+        const search = typeof req.query.search === 'string' ? req.query.search : null;
+    
+        return {
+          page_number,
+          status,
+          search,
+        };
+      }
 
     // Blog Controller
     public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
-
         try {
-            const page_number = Number(req.query.page) || 1;
-            const findAllBlog: Blog[] | string = await this.blogService.getAllBlog(page_number);
-            res.status(200).json({ data: findAllBlog });
+          const filterBlog = this.Filter(req);
+          const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
+          res.status(200).json(findAllBlog);
+        } catch (error) {
+          next(error);
         }
-        catch (error) {
+      };
+
+    public getBlogById = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const id = Number(req.params.id);
+
+            const blog: Blog | string = await this.blogService.getBlogByID(id);
+
+            res.status(200).json(blog);
+        } catch (error) {
             next(error);
         }
-    };
+    }
 
     public createNewblog = async (req: RequestWithUser, res: Response, next: NextFunction) => {
         try {
@@ -93,8 +117,13 @@ export class BlogMangmentcotroller {
 
         try {
             const page_number = Number(req.query.page) || 1;
-            const findAlltags: Tags[] | string = await this.tagService.getAllTag(page_number);
-            res.status(200).json({ data: findAlltags });
+
+            if (page_number < 0 || page_number > 100000000000000000) {
+                res.status(400).json({ message: "Page number is irregular" })
+            } else {  
+                const findAlltags: Tags[] | string = await this.tagService.getAllTag(page_number);
+                res.status(200).json(findAlltags);
+            }
         }
         catch (error) {
             next(error);
@@ -135,8 +164,13 @@ export class BlogMangmentcotroller {
 
         try {
             const page_number = Number(req.query.page) || 1;
-            const findAllArticle: Article[] | string = await this.articleService.getAllArticl(page_number);
-            res.status(200).json({ data: findAllArticle });
+
+            if (page_number < 0 || page_number > 100000000000000000) {
+                res.status(400).json({ message: "Page number is irregular" })
+            } else {  
+                const findAllArticle: Article[] | string = await this.articleService.getAllArticl(page_number);
+                res.status(200).json({ data: findAllArticle });
+            }
         }
         catch (error) {
             next(error);
@@ -148,7 +182,7 @@ export class BlogMangmentcotroller {
         try {
             const article_id = Number(req.params.id);
             const findArticle: Article | string = await this.articleService.getArticlById(article_id);
-            res.status(200).json({ data: findArticle });
+            res.status(200).json(findArticle);
         }
         catch (error) {
             next(error);
@@ -159,6 +193,9 @@ export class BlogMangmentcotroller {
         try {
 
             const article_data: CreateArticleDto = req.body;
+
+            console.log(req.user);
+
             const user_id = Number(req.user.uid);
             const newArticle = await this.articleService.createNewArticl(article_data, user_id);
             res.status(200).json({ data: newArticle });
@@ -166,6 +203,7 @@ export class BlogMangmentcotroller {
             filecache.flush();
         }
         catch (error) {
+            console.log(error);
             next(error);
         }
     }
@@ -173,6 +211,9 @@ export class BlogMangmentcotroller {
     public updateArticle = async (req: RequestWithUser, res: Response, next: NextFunction) => {
         try {
             const article_data: UpdateArticleDto = req.body;
+
+            console.log("\n\nUpdate article data: ", article_data);
+
             const user_id = Number(req.user.uid);
             const article_id = Number(req.params.id);
             const udpateArticle = await this.articleService.upddateArtilce(article_id, article_data, user_id);
@@ -204,9 +245,14 @@ export class BlogMangmentcotroller {
 
         try {
             const page_number = Number(req.query.page) || 1;
-            const article_id = Number(req.params.id);
-            const findTagsPerAricle: ArticleTag[] | string = await this.articleTagsService.getTagByArticleId(article_id, page_number);
-            res.status(200).json({ data: findTagsPerAricle });
+
+            if (page_number < 0 || page_number > 100000000000000000) {
+                res.status(400).json({ message: "Page number is irregular" })
+            } else {  
+                const article_id = Number(req.params.id);
+                const findTagsPerAricle: ArticleTag[] | string = await this.articleTagsService.getTagByArticleId(article_id, page_number);
+                res.status(200).json({ data: findTagsPerAricle });
+            }
         }
         catch (error) {
             next(error);
@@ -251,6 +297,11 @@ export class BlogMangmentcotroller {
         try {
             const searchTerm: string = String(req.query.search_term || '');
             const pageNumber = Number(req.query.page) || 1;
+
+            if (pageNumber < 0 || pageNumber > 100000000000000000) {
+                return res.status(400).json({ message: "Page number is irregular" })
+            } 
+
             let message: string = `Articles fetched successfully`;
             const cacheKey = `articles:${searchTerm}:${pageNumber}`;
             
@@ -270,7 +321,7 @@ export class BlogMangmentcotroller {
             } 
             else {
                 // You can cache the result if needed
-                // cache.set(cacheKey, articles, 3000);
+                cache.set(cacheKey, articles, 3000);
             }
     
             res.status(200).json({ message: message, data: articles });
@@ -279,24 +330,36 @@ export class BlogMangmentcotroller {
         }
     };
     
+    public getActiveTags = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const tags = await this.tagService.getActiveTags();
+
+            return res.status(200).json({message: 'Articles successfully fetched', data: tags})
+
+        } catch (err) {
+            next(err);
+        }
+    }
 
     public SearchArticleById = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
             const article_id = Number(req.params.id);
-            const cachekey = `article:${article_id}`;
-            const cachedData = filecache.get<any>(cachekey);
+            // const cachekey = `article:${article_id}`;
+            // const cachedData = filecache.get<any>(cachekey);
 
-            if (cachedData) {
-                return res.status(200).json({
-                    message: "Cached Article fetched successfully",
-                    data: cachedData,
-                });
-            }
+            // if (cachedData) {
+            //     return res.status(200).json({
+            //         message: "Cached Article fetched successfully",
+            //         data: cachedData,
+            //     });
+            // }
 
-            const findArticle: Article | string = await this.search.SearchArticleById(article_id);
+            const findArticle: ArticleAndPrevious | string = await this.search.SearchArticleById(article_id);
 
-            filecache.set(cachekey, findArticle, 3600);
+            console.log(findArticle);
+
+            // filecache.set(cachekey, findArticle, 3600);
 
             res.status(200).json({
                 data: findArticle
@@ -306,5 +369,35 @@ export class BlogMangmentcotroller {
             next(error);
         }
     };
+
+    public GetRelatedArticles = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const article_id = Number(req.params.id);
+            
+            const relatedArticles: RelatedArticle[] = await this.search.GetRelatedArticles(article_id);
+            
+            console.log(relatedArticles);
+                
+            res.status(200).json({
+                data: relatedArticles
+            })
+        } catch (error) {
+            next(error);
+        }
+    }
+    
+    public GetTagArticles = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const tag_id = Number(req.params.id);
+
+            const tagArticles: Article[] = await this.search.GetArticlesByTag(tag_id);
+
+            res.status(200).json({
+                data: tagArticles
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 
 }

@@ -15,6 +15,10 @@ export class Postcotroller {
 
         try {
             const pageNumber = Number(req.query.page) || 1;
+
+            if (pageNumber < 0 || pageNumber > 100000000000000000) {
+                return res.status(400).json({ message: "Page number is irregular" })
+            } 
             const findAllPost: Post[] = await this.post.findAllPost(pageNumber);
             res.status(200).json({ data: findAllPost, message: "findAll" });
         }

@@ -28,10 +28,10 @@ export class UserService {
   }
 
   public async findUserById(userId: number): Promise<User> {
-    const findUser: User = await DB.Users.findByPk(userId);
+    const findUser: User = await DB.Users.findByPk(userId, {raw: true});
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
-    return findUser;
+    return {...findUser, password: ''};
   }
 
   public async createUser(userData: CreateUserDto): Promise<User> {

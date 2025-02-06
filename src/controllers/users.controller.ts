@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, raw, Request, Response } from 'express';
 import { Container } from 'typedi';
 import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
@@ -10,6 +10,11 @@ export class UserController {
   public getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const pageNumber = Number(req.query.page) || 1;
+
+      if (pageNumber < 0 || pageNumber > 100000000000000000) {
+        return res.status(400).json({ message: "Page number is irregular" })
+    }
+
       const userName = req.query.username ? String(req.query.username) : undefined;  
       const findAllUsersData: User[] = await this.user.findAllUser(pageNumber, userName);
       res.status(200).json({ data: findAllUsersData, message: 'findAll' });
@@ -24,7 +29,9 @@ export class UserController {
       const userId = Number(req.params.id);
       const findOneUserData: User = await this.user.findUserById(userId);
 
-      res.status(200).json({ data: findOneUserData, message: 'findOne' });
+      console.log("his user: ", findOneUserData);
+
+      res.status(200).json({ ...findOneUserData, message: 'findOne' });
     } catch (error) {
       next(error);
     }

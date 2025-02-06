@@ -68,7 +68,6 @@ export class ArticleTagsService {
             where: {
                 [Op.and]: [
                     { id: article_id },
-                    { record_status: 2 }
                 ]
             }
         });
@@ -82,11 +81,24 @@ export class ArticleTagsService {
             }
         });
 
+        const checkArticleHasTag = await DB.ArticleTag.findOne({
+            where: {
+                [Op.and]: [
+                    {tag_id: tag_id},
+                    {article_id: article_id}
+                ]
+            }
+        })
+
         if (!checkOnArticle)
             throw new HttpException(404, "Article doesn't exist");
 
         if (!checkOnTag)
             throw new HttpException(404, "Tag doesn't exist");
+
+        if (checkArticleHasTag) {
+            throw new HttpException(404, "Article already has tag");
+        }
 
         const create_tagsforAtricle: ArticleTagModel = await DB.ArticleTag.create({ ...article_tag_data, created_by: user_id });
         return create_tagsforAtricle;

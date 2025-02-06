@@ -38,6 +38,7 @@ export class BlogRoute implements Routes {
 
   private initializeBlogRoutes(): void {
     this.router.get(this.pathBlog, AuthMiddleware, Authorization(57), this.blogController.getAllBlogs);
+    this.router.get(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware, Authorization(57), this.blogController.getBlogById);
     this.router.post(this.pathBlog, AuthMiddleware, Authorization(58), ValidationMiddleware(CreateBlogDto), this.blogController.createNewblog);
     this.router.put(`${this.pathBlog}/${ID_PARAM}`,AuthMiddleware, Authorization(59), ValidationMiddleware(UpdateBlogDto), this.blogController.updateBlog);
     this.router.delete(`${this.pathBlog}/${ID_PARAM}`, AuthMiddleware,Authorization(60),  this.blogController.deleteBlog);
@@ -67,6 +68,9 @@ export class BlogRoute implements Routes {
   private initializeSearchArticleRoute(): void {
     this.router.get(`${this.pathExtenrnal}`, this.blogController.SearchArticle);
     this.router.get(`${this.pathExtenrnal}/${ID_PARAM}`, this.blogController.SearchArticleById);
+    this.router.get(`${this.pathExtenrnal}/related-articles/${ID_PARAM}`, this.blogController.GetRelatedArticles);
+    this.router.get(`${this.pathExtenrnal}/tags`, this.blogController.getActiveTags);
+    this.router.get(`${this.pathExtenrnal}/tag/${ID_PARAM}`, this.blogController.GetTagArticles);
   }
 
 }

@@ -4,6 +4,9 @@ import { Service } from 'typedi';
 import sequelize, { Op, where } from 'sequelize';
 import { Article } from '@/interfaces/article.interface';
 import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
+import { Http } from 'winston/lib/winston/transports';
+import { Blog } from '@/interfaces/blog.interface';
+import { check } from 'prettier';
 
 
 @Service()
@@ -89,9 +92,13 @@ export class ArticleService {
                 [getUserName('deleted_by'), 'deletedBy'],
                 ['deleted_on', "deletedOn"],
             ],
+            raw: true
         });
 
-        return allArticle ? allArticle : "There are no Article";
+        if (!allArticle) 
+            throw new HttpException(404, "Article doesn't exist");
+
+        return allArticle;
     }
 
     public async createNewArticl(article_data: CreateArticleDto, user_id: number): Promise<Article> {
@@ -102,7 +109,7 @@ export class ArticleService {
                     { id: article_data.blog_id },
                     { record_status: 2 }
                 ]
-            }
+            },
         });
 
 
@@ -110,6 +117,34 @@ export class ArticleService {
             throw new HttpException(404, "The Blog doesn't exist or is not active.");
         }
 
+        article_data.url_en = article_data.url_en.toLowerCase();
+        article_data.url_ar = article_data.url_ar.toLowerCase();
+
+        const regular = /@(\w+)/g;
+        const matches_en = article_data.description_en.match(regular);
+        const matches_ar = article_data.description_ar.match(regular);
+
+        if (Array.isArray(article_data.in_links)) {
+            throw new HttpException(400, "In links should be a json object")
+        }
+
+        var inLinks = {};
+
+        if (matches_en)
+        matches_en.map((match) => {
+            if (article_data.in_links[match]) {
+                inLinks[match] = article_data.in_links[match]
+            }
+        });
+
+        if (matches_ar)
+        matches_ar.map((match) => {
+            if (article_data.in_links[match]) {
+                inLinks[match] = article_data.in_links[match]
+            }
+        });
+
+        delete article_data.in_links;
 
         const existingUrl = await DB.Article.findOne({
             where: {
@@ -129,19 +164,77 @@ export class ArticleService {
             }
         }
 
-        const create_article: Article = await DB.Article.create({ ...article_data, created_by: user_id });
+        console.log("\n\nArticle data: ", article_data);
+        console.log("User: ", user_id);
+
+        const create_article: Article = await DB.Article.create({ ...article_data, in_links: inLinks, created_by: user_id });
         return create_article;
     }
 
     public async upddateArtilce(article_id: number, article_data: UpdateArticleDto, user_id: number): Promise<string> {
 
+        
         const checkOnArticle: Article = await DB.Article.findByPk(article_id);
+
+        if (article_data.record_status) {
+            const checkOnBlog : Blog = await DB.Blog.findByPk(checkOnArticle.blog_id);
+
+            if (checkOnBlog.record_status !== 2 && !(checkOnBlog.record_status === 1 && article_data.record_status === 3)) {
+                throw new HttpException(406, "Cannot change article's record status if blog is not active");
+            }
+
+        }
 
         if (!checkOnArticle) {
             throw new HttpException(404, "Article doesn't exist");
         }
 
+        const regular = /@(\w+)/g;
+        var desc_en;
+        var desc_ar;
+
+        if (article_data.description_en) {
+            desc_en = article_data.description_en;
+        } else {
+            desc_en = checkOnArticle.description_en
+        }
+
+        if (article_data.description_ar) {
+            desc_ar = article_data.description_ar;
+        } else {
+            desc_ar = checkOnArticle.description_ar
+        }
+
+        const matches_en = desc_en.match(regular);
+        const matches_ar = desc_ar.match(regular);
+        
+        var inLinks = {};
+
+        if (article_data.in_links) {
+
+            matches_en.map((match) => {
+                if (article_data.in_links[match]) {
+                    inLinks[match] = article_data.in_links[match]
+                }
+            });
+            
+            matches_ar.map((match) => {
+                if (article_data.in_links[match]) {
+                    inLinks[match] = article_data.in_links[match]
+                }
+            });
+            
+        } else {
+            inLinks = checkOnArticle.in_links;
+        }
+
+        delete article_data.in_links;
+
         if (article_data.url_ar || article_data.url_en) {
+    
+            article_data.url_en = article_data.url_en.toLowerCase();
+            article_data.url_ar = article_data.url_ar.toLowerCase();
+
             const checkUrl = await DB.Article.findAll({
                 where: {
                     [Op.or]: [
@@ -158,6 +251,7 @@ export class ArticleService {
         const udpateArticle = await DB.Article.update(
             {
                 ...article_data,
+                in_links: inLinks,
                 updated_by: user_id,
                 updated_on: new Date(),
             },

@@ -9,6 +9,18 @@ export class AuthController {
   
   public auth = Container.get(AuthService);
 
+  public userByToken = async(req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+
+      const permissions: Number[] = await this.auth.getUserPermissions(req.user.uid);
+      
+      res.status(200).json({ ...req.user, permissions});
+      // res.status(200).json(req.user);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
@@ -22,11 +34,16 @@ export class AuthController {
   };
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    try { 
       const userData: LoginDto = req.body;
+
+      console.log("\n\nUser login: ", req.body);
+
       const { cookie, findUser } = await this.auth.login(userData);
+      const permissions: Number[] = await this.auth.getUserPermissions(findUser.uid);
+
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
+      res.status(200).json({ ...findUser, permissions, message: 'login' });
     } catch (error) {
       next(error);
     }

@@ -6,6 +6,7 @@ import sequelize, { Op, where } from 'sequelize';
 import { CreateTagDto } from '@/dtos/tag.dto';
 import { Tags } from '@/interfaces/tags.interface';
 import { Tag } from 'swagger-jsdoc';
+import { toTitleCase } from '@/utils/functions';
 
 
 @Service()
@@ -26,9 +27,9 @@ export class TagService {
                     WHEN TagModel.record_status = 3 THEN 'DELETED'
                     ELSE 'UNKNOWN'
                 END
-            `);;
-
-        const allTag: Tags[] = await DB.Tag.findAll({
+            `);
+        
+        var allTag: Tags[] = await DB.Tag.findAll({
             attributes: [
                 'id',
                 'title_en',
@@ -40,14 +41,27 @@ export class TagService {
                 [getUserName('deleted_by'), 'deletedBy'],
                 ['deleted_on', "deletedOn"],
             ],
+            where: {
+                record_status: 2,
+            },
+            raw: true,
             offset,
             limit: 15,
         });
+        
+        allTag = allTag.map((tag) => ({
+            ...tag,
+            "title_en_case": toTitleCase(tag.title_en),
+            "title_ar_case": toTitleCase(tag.title_ar)
+        }));
 
         return allTag.length ? allTag : "There are no Tags";
     }
 
     public async createNewTag(tag_data: CreateTagDto, user_id: number): Promise<Tags> {
+
+        tag_data.title_en = tag_data.title_en.toLowerCase();
+        tag_data.title_ar = tag_data.title_ar.toLowerCase();
 
         const existingTag = await DB.Tag.findOne({
             where: {
@@ -66,8 +80,20 @@ export class TagService {
                 throw new HttpException(409, 'A Tag with the same Title (Arabic) already exists.');
             }
         }
+
+
         const create_tag: Tags = await DB.Tag.create({ ...tag_data, created_by: user_id });
         return create_tag;
+    }
+
+    public async getActiveTags(): Promise<Tags[]> {
+        const tags: Tags[] = await DB.Tag.findAll({
+            where: {
+                record_status: 2,
+            }
+        });
+
+        return tags;
     }
 
     public async deleteTag(tag_id: number, user_id: number): Promise<Tags | string> {

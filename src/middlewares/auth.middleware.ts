@@ -14,6 +14,7 @@ const roleOwnership = {
 
 const getAuthorization = (req) => {
   const coockie = req.cookies['Authorization'];
+  
   if (coockie) return coockie;
 
   const header = req.header('Authorization');
@@ -25,6 +26,8 @@ const getAuthorization = (req) => {
 export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
     const Authorization = getAuthorization(req);
+
+    // console.log(""Authorization);
 
     if (Authorization) {
       const { id } = verify(Authorization, SECRET_KEY) as DataStoredInToken;

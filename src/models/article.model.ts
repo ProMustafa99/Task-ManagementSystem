@@ -14,7 +14,7 @@ export class ArticleModel extends Model<Article, ArticleCreationAttributes> impl
     public url_ar: string;
     public description_en: string;
     public description_ar: string;
-    public in_links: string[] | null;
+    public in_links: any | null;
     public related_links: string[] | null;
     public cover_image_url: string;
     public record_status: RecordStatus;

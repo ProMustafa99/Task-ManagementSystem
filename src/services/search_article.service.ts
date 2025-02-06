@@ -3,6 +3,9 @@ import { Service } from 'typedi';
 import { QueryTypes } from 'sequelize';
 import { Article } from '@/interfaces/article.interface';
 import sequelize, { Op, where } from 'sequelize';
+import { ArticleAndPrevious } from '@/interfaces/article_and_prev.interface';
+import { RelatedArticle } from '@/interfaces/related_article.interface';
+import { HttpException } from '@/exceptions/httpException';
 
 @Service()
 export class SearchArticleService {
@@ -44,7 +47,7 @@ export class SearchArticleService {
                 SUBSTRING (article.description_en,1,150) AS description_en,
                 SUBSTRING (article.description_ar,1,150) AS description_ar,
                 article.cover_image_url,
-                GROUP_CONCAT(tag.title_en) AS tags
+                GROUP_CONCAT(CASE WHEN tag.record_status = 2 THEN tag.title_en ELSE NULL END) AS tags
             FROM article
             JOIN blog ON blog.id = article.blog_id
             LEFT JOIN article_tags ON article_tags.article_id = article.id
@@ -65,7 +68,7 @@ export class SearchArticleService {
                 SUBSTRING (article.description_en,1,150) AS description_en,
                 SUBSTRING (article.description_ar,1,150) AS description_ar,
                 article.cover_image_url,
-                GROUP_CONCAT(tag.title_en) AS tags
+                GROUP_CONCAT(CASE WHEN tag.record_status = 2 THEN tag.title_en ELSE NULL END) AS tags
             FROM article
             JOIN blog ON blog.id = article.blog_id
             LEFT JOIN article_tags ON article_tags.article_id = article.id
@@ -128,13 +131,42 @@ export class SearchArticleService {
         };
     }
 
+    public async GetArticlesByTag(tag_id: number): Promise<Article[]> {
+        const getArticleIds = await DB.ArticleTag.findAll({
+            attributes: [
+                'article_id'
+            ],
+            where: {
+                tag_id,
+            }
+        });
 
-    public async SearchArticleById(article_id: number): Promise<Article | string> {
+        const articles = await Promise.all(
+            getArticleIds.map((article) => (
+                DB.Article.findOne({
+                    attributes: [
+                        'id',
+                        'title_en',
+                        'description_en',
+                        'cover_image_url'
+                    ],
+                    where: {
+                        id: article.article_id,
+                    }
+                })
+            ))
+        );
+
+        return articles;
+    }
+
+    public async SearchArticleById(article_id: number): Promise<ArticleAndPrevious | string> {
         const getBlogName = (field: string) => sequelize.literal(`(SELECT title_en FROM blog WHERE blog.id = ArticleModel.${field})`);
 
         const allArticle = await DB.Article.findOne({
             attributes: [
                 [getBlogName('blog_id'), 'Blog Name'],
+                'title_en',
                 'description_en',
                 'description_ar',
                 'in_links',
@@ -147,24 +179,132 @@ export class SearchArticleService {
             },
         });
 
+        const prevArticles = await DB.Article.findOne({
+            attributes: [
+                'title_en',
+                'cover_image_url',
+                'id',
+            ],
+            where: {
+                id: {[Op.lt]: article_id},
+                record_status: 2,
+            },
+            order: [['id', 'DESC']],
+        })
+
+        const nextArticles = await DB.Article.findOne({
+            attributes: [
+                'title_en',
+                'cover_image_url',
+                'id'
+            ],
+            where: {
+                id: {[Op.gt]: article_id},
+                record_status: 2,
+            },
+            order: [['id', 'ASC']],
+        })
+
         if (!allArticle) {
-            return "There are no Article";
+            throw new HttpException(404, "No articles found");
         }
 
         const dataValues = allArticle.dataValues;
         this.description_en = dataValues.description_en;
         this.description_ar = dataValues.description_ar;
-        this.in_link = dataValues.in_links[0];
+        this.in_link = dataValues.in_links;
 
         this.updatedDescriptionEn = this.replaceLinksInDescription(this.description_en, this.in_link);
         this.updatedDescriptionAr = this.replaceLinksInDescription(this.description_ar, this.in_link);
 
         dataValues.description_en = this.updatedDescriptionEn;
         dataValues.description_ar = this.updatedDescriptionAr;
+
+        // const prev = prevArticles;
+
         delete dataValues.in_links;
 
-        return dataValues;
+        return {article: dataValues, prevArticles, nextArticles};
 
     }
 
+    public async GetRelatedArticles(article_id: number): Promise<RelatedArticle[]> {
+        const articlesWithSameTags = {};
+
+        const articleTags = await DB.ArticleTag.findAll({
+            attributes: [
+                'tag_id',
+            ],
+            where: {
+                article_id,
+            }
+        });
+
+        await Promise.all(
+
+            articleTags.map(async articleTag => {
+                const articles = await DB.ArticleTag.findAll({
+                attributes: [
+                    'article_id'
+                ],
+                where: {
+                    article_id: {
+                        [Op.ne]: article_id
+                    },
+                    tag_id: articleTag.tag_id,
+                }
+            });
+
+            articles.map(article => {
+                if (articlesWithSameTags[article.article_id]) {
+                    articlesWithSameTags[article.article_id] += 1;
+                } else {
+                    articlesWithSameTags[article.article_id] = 1;
+                }
+            })
+        })
+        )
+
+        let entries = Object.entries(articlesWithSameTags);
+
+        if (entries.length < 3) {
+            const blogId = await DB.sequelize.query(`SELECT blog_id FROM article WHERE article.id = ${article_id}`, { type: QueryTypes.SELECT });
+
+            console.log("Blog id: ", blogId);
+
+            const blogArticles = await DB.Article.findAll({
+                attributes: [
+                    'id',
+                ],
+                where: {
+                    blog_id: blogId[0]['blog_id']
+                }
+            });
+            
+            // blogArticles.forEach(blogArticle => {
+            //     entries.push([String(blogArticle.id), 1])
+            // });
+
+            for (let i = 0; i < 5; i++) {
+                entries.push([String(blogArticles[Math.floor(Math.random() * blogArticles.length)].id), 1])
+            }
+
+
+        };
+        
+        const sortedEntries = entries.sort((a, b) => Number(b[1]) - Number(a[1]));
+
+        const relatedArticles = await Promise.all(sortedEntries.slice(0, 3).map(async ([article_id]) => await DB.Article.findOne({
+            attributes: [
+                'id',
+                'title_en',
+                'cover_image_url'
+            ],
+            where: {
+                id: article_id
+            }
+        })));
+
+        return relatedArticles;
+    }
 }    

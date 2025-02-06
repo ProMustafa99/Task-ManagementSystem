@@ -29,8 +29,11 @@ export class LoginDto {
 
 export class UpdateUserDto {
   @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(32)
   public password: string;
+
+  @IsString()
+  public user_name :string;
+
+  @IsEmail()
+  public email: string;
 }

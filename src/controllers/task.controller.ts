@@ -10,6 +10,11 @@ export class TaskContrller {
     public getAllTask = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const pageNumber = Number(req.query.page) || 1;
+
+            if (pageNumber < 0 || pageNumber > 100000000000000000) {
+                return res.status(400).json({ message: "Page number is irregular" })
+            } 
+
             const filters = {
                 agentId: req.query.agentId,
                 taskType: req.query.taskType,
