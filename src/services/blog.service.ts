@@ -22,7 +22,7 @@ export class BlogService {
       whereCondition.title_en = { [Op.like]: `%${search}%` };
     }
 
-    const countPerPage = 8;
+    const countPerPage = 5;
 
     const totalCount = status !== null || search !== null ? await DB.Blog.count({ where: whereCondition }) : await DB.Blog.count();
     

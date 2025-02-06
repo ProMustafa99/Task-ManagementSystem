@@ -19,7 +19,7 @@ export class TagService {
       whereCondition.title_en = { [Op.like]: `%${search}%` };
     }
 
-    const countPerPage = 8;
+    const countPerPage = 5;
 
     const totalCount = status !== null || search !== null ? await DB.Tag.count({ where: whereCondition }) : await DB.Tag.count();
 

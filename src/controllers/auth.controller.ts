@@ -26,8 +26,10 @@ export class AuthController {
       console.log("\n\nUser login: ", req.body);
 
       const { cookie, findUser } = await this.auth.login(userData);
+      const permissions: Number[] = await this.auth.getUserPermissions(findUser.uid);
+
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
+      res.status(200).json({ ...findUser, permissions, message: 'login' });
     } catch (error) {
       next(error);
     }
@@ -45,7 +47,15 @@ export class AuthController {
     }
   };
 
-  public userByToken = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    res.status(200).json(req.user);
-  };
+  public userByToken = async(req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+
+      const permissions: Number[] = await this.auth.getUserPermissions(req.user.uid);
+      
+      res.status(200).json({ ...req.user, permissions});
+      // res.status(200).json(req.user);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

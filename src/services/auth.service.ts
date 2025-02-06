@@ -54,5 +54,12 @@ export class AuthService {
 
     return findUser;
   }
+
+  public async getUserPermissions(id: number): Promise<Number[]> {
+    const userPermissions = await DB.UserPermission.findAll({ where: { user_id: id} });
+    const permession = userPermissions.map(p => p.id_permission);
+
+    return permession;
+  }
   
 }

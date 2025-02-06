@@ -26,7 +26,7 @@ export class UserController {
 
       const filterUser = this.Filter(req);
       const findAllUsersData: PagenationUsers = await this.user.findAllUser(filterUser.page_number, filterUser.status, filterUser.search);
-      res.status(200).json({ data: findAllUsersData, message: 'findAll' });
+      res.status(200).json(findAllUsersData);
     } catch (error) {
       next(error);
     }
