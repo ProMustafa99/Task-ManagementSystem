@@ -3,15 +3,29 @@ import { Container } from 'typedi';
 import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import { UserService } from '@services/users.service';
+import { PagenationUsers } from '@/interfaces/pagenation.interface';
 
 export class UserController {
   public user = Container.get(UserService);
+
+
+  private Filter(req: Request) {
+    const page_number = Number(req.query.page) || 1;
+    const status = Number(req.query.record_status) || null;
+    const search = typeof req.query.search === 'string' ? req.query.search : null;
+
+    return {
+      page_number,
+      status,
+      search,
+    };
+  }
   
   public getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const pageNumber = Number(req.query.page) || 1;
-      const userName = req.query.username ? String(req.query.username) : undefined;  
-      const findAllUsersData: User[] = await this.user.findAllUser(pageNumber, userName);
+
+      const filterUser = this.Filter(req);
+      const findAllUsersData: PagenationUsers = await this.user.findAllUser(filterUser.page_number, filterUser.status, filterUser.search);
       res.status(200).json({ data: findAllUsersData, message: 'findAll' });
     } catch (error) {
       next(error);

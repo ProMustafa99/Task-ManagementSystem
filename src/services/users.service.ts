@@ -1,38 +1,68 @@
-import { hash } from 'bcrypt';
-import { Service } from 'typedi';
+import { HttpException } from '@/exceptions/httpException';
 import { DB } from '@database';
 import { CreateUserDto } from '@dtos/users.dto';
-import { HttpException } from '@/exceptions/httpException';
 import { User } from '@interfaces/users.interface';
+import { hash } from 'bcrypt';
 import { Op } from 'sequelize';
-import { Container } from 'typedi';
+import { Container, Service } from 'typedi';
 import { TaskService } from './task.service';
-import { UserPermission } from '@/interfaces/userPermission.interface';
+import { PagenationUsers } from '@/interfaces/pagenation.interface';
 
 @Service()
 export class UserService {
 
-  public async findAllUser(pageNumber: number, userName: string): Promise<User[]> {
-    const offset = (pageNumber - 1) * 5;
+  
+  public async findAllUser(pageNumber: number, status: number | null, search: string | null,): Promise<PagenationUsers> {
+
+    const whereCondition: any = {};
+
+    if (status !== null) {
+      whereCondition.record_status = status;
+    }
+
+    if (search) {
+      whereCondition.title_en = { [Op.like]: `%${search}%` };
+    }
+
+
+    const countPerPage = 5;
+
+    const totalCount = status !== null || search !== null ? await DB.Blog.count({ where: whereCondition }) : await DB.Blog.count();
+
+    const maxPages = Math.ceil(totalCount / countPerPage);
+
+    const offset = (pageNumber - 1) * countPerPage;
 
     const allUser = await DB.Users.findAll({
       offset: offset,
-      limit: 5,
-      where: userName ? {
+      limit: countPerPage,
+      where: search ? {
         user_name: {
-          [Op.like]: `%${userName}%`
+          [Op.like]: `%${search}%`
         }
       } : undefined
     });
 
-    return allUser;
+    return allUser.length
+    ? {
+        data: allUser,
+        countPerPage,
+        totalCount,
+        maxPages,
+      }
+    : {
+        data: 'Not Found',
+        countPerPage,
+        totalCount,
+        maxPages,
+      };
   }
 
-  public async findUserById(userId: number): Promise<{findUser:User;getPermission }> {
+  public async findUserById(userId: number): Promise<{ findUser: User; getPermission }> {
 
     const getPermission = await DB.UserPermission.findOne({
       attributes: [
-        [DB.Sequelize.fn('GROUP_CONCAT', DB.Sequelize.col('id_permission')), 'permissions'] 
+        [DB.Sequelize.fn('GROUP_CONCAT', DB.Sequelize.col('id_permission')), 'permissions']
       ],
       where: {
         user_id: userId
@@ -44,7 +74,7 @@ export class UserService {
 
     // findUser.permissions = getPermission ? getPermission.get('permissions') : null;
 
-    return {findUser , getPermission};
+    return { findUser, getPermission };
   }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
