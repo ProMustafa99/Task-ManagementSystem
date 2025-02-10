@@ -1,30 +1,57 @@
-import { hash } from 'bcrypt';
-import { Service } from 'typedi';
+import { HttpException } from '@/exceptions/httpException';
 import { DB } from '@database';
 import { CreateUserDto } from '@dtos/users.dto';
-import { HttpException } from '@/exceptions/httpException';
 import { User } from '@interfaces/users.interface';
+import { hash } from 'bcrypt';
 import { Op } from 'sequelize';
-import { Container } from 'typedi';
+import { Container, Service } from 'typedi';
 import { TaskService } from './task.service';
+import { PagenationUsers } from '@/interfaces/pagenation.interface';
 
 @Service()
 export class UserService {
 
-  public async findAllUser(pageNumber: number, userName: string): Promise<User[]> {
-    const offset = (pageNumber - 1) * 5;
+
+  public async findAllUser(pageNumber: number, status: number | null, search: string | null,): Promise<PagenationUsers> {
+
+    const whereCondition: any = {};
+
+    if (status !== null) {
+      whereCondition.status = status;
+    }
+
+    if (search) {
+      whereCondition.user_name = { [Op.like]: `%${search}%` };
+    }
+
+
+    const countPerPage = 5;
+
+    const totalCount = status !== null || search !== null ? await DB.Users.count({ where: whereCondition }) : await DB.Users.count();
+
+    const maxPages = Math.ceil(totalCount / countPerPage);
+
+    const offset = (pageNumber - 1) * countPerPage;
 
     const allUser = await DB.Users.findAll({
       offset: offset,
-      limit: 5,
-      where: userName ? {
-        user_name: {
-          [Op.like]: `%${userName}%`
-        }
-      } : undefined
+      limit: countPerPage,
+      where: whereCondition
     });
 
-    return allUser;
+    return allUser.length
+      ? {
+        data: allUser,
+        countPerPage,
+        totalCount,
+        maxPages,
+      }
+      : {
+        data: 'Not Found',
+        countPerPage,
+        totalCount,
+        maxPages,
+      };
   }
 
   public async findUserById(userId: number): Promise<User> {
@@ -51,16 +78,35 @@ export class UserService {
 
   }
 
-  public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
+  public async updateUsers(userId: number, userData: CreateUserDto): Promise<User> {
     const findUser: User = await DB.Users.findByPk(userId);
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
-    const hashedPassword = await hash(userData.password, 10);
-    await DB.Users.update({ ...userData, password: hashedPassword }, { where: { uid: userId } });
+    if (userData.password) {
+      userData.password = await hash(userData.password, 10);
+    } else {
+      delete userData.password;
+    }
+
+    await DB.Users.update(userData, { where: { uid: userId } });
 
     const updateUser: User = await DB.Users.findByPk(userId);
     return updateUser;
   }
+
+  public async updateSettingUser(userId: number, userData: Partial<CreateUserDto>): Promise<User> {
+    const findUser = await DB.Users.findByPk(userId);
+    if (!findUser) throw new HttpException(409, "User doesn't exist");
+
+    if (userData.password) {
+        userData.password = await hash(userData.password, 10);
+    }
+
+    await DB.Users.update(userData, { where: { uid: userId } });
+
+    return await DB.Users.findByPk(userId);
+}
+
 
   public async deleteUser(userId: number): Promise<User> {
     const findUser: User = await DB.Users.findByPk(userId);

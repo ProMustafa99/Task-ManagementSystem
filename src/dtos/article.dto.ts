@@ -1,5 +1,23 @@
 import { IsUrlOrPathConstraint } from '@/utils/functions';
-import { IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject, MinLength, Validate } from 'class-validator';
+import { registerDecorator, IsString, IsOptional, IsNumber, IsArray, IsUrl, MaxLength, IsNotEmpty, IsIn, IsObject, MinLength, Validate, Matches, ValidateIf, ValidationOptions, ValidationArguments } from 'class-validator';
+
+
+function MatchesSlash(validationOptions?: ValidationOptions) {
+    return function (object: Object, propertyName: string) {
+        registerDecorator({
+            name: 'matchesSlash',
+            target: object.constructor,
+            propertyName: propertyName,
+            options: validationOptions,
+            validator: {
+                validate(value: any, args: ValidationArguments) {
+                    if (typeof value !== 'object' || value === null) return false;
+                    return Object.values(value).every((val: string) => /^\/.+/.test(val));
+                },
+            },
+        });
+    };
+}
 
 export class CreateArticleDto {
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
@@ -52,18 +70,21 @@ export class CreateArticleDto {
 export class UpdateArticleDto {
     @IsOptional()
     @IsNumber({}, { message: 'Blog ID must be a valid number.' })
+    @IsNotEmpty({ message: 'Blog ID is required.' })
     public blog_id?: number;
 
     @IsOptional()
     @MinLength(1)
     @IsString({ message: 'Title in English must be a string.' })
     @MaxLength(255, { message: 'Title in English should not exceed 255 characters.' })
+    @IsNotEmpty({ message: 'Title in English is required.' })
     public title_en?: string;
 
     @IsOptional()
     @IsString({ message: 'Title in Arabic must be a string.' })
     @MinLength(1)
     @MaxLength(255, { message: 'Title in Arabic should not exceed 255 characters.' })
+    @IsNotEmpty({ message: 'Title in Arabic is required.' })
     public title_ar?: string;
 
     @IsOptional()
@@ -77,11 +98,13 @@ export class UpdateArticleDto {
     @IsOptional()
     @MinLength(1)
     @IsString({ message: 'Description in English must be a string.' })
+    @IsNotEmpty({ message: 'Description in English is required.' })
     public description_en?: string;
 
     @IsOptional()
     @MinLength(1)
     @IsString({ message: 'Description in Arabic must be a string.' })
+    @IsNotEmpty({ message: 'Description in Arabic is required.' })
     public description_ar?: string;
 
     @IsOptional()
@@ -96,11 +119,19 @@ export class UpdateArticleDto {
 
     @IsOptional()
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
+    @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url?: string;
 
-    
+
     @IsOptional()
     @IsNumber({}, { message: 'Record status must be a valid number.' })
-    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    @IsIn([1, 2, 3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
+
+/*
+
+1- when update on article to active and the blog is pedding the article is display (wrong)
+2- when delete the tags from article must me remove it from extrenal link  
+3- 
+*/

@@ -1,26 +1,37 @@
 import { DB } from '@/database';
-import { HttpException } from '@/exceptions/httpException';
-import { Blog } from '@/interfaces/blog.interface';
-import { Service } from 'typedi';
-import sequelize, { Op, where } from 'sequelize';
 import { CreateTagDto } from '@/dtos/tag.dto';
+import { HttpException } from '@/exceptions/httpException';
+import { PagenationTags } from '@/interfaces/pagenation.interface';
 import { Tags } from '@/interfaces/tags.interface';
-import { Tag } from 'swagger-jsdoc';
+import sequelize, { Op } from 'sequelize';
+import { Service } from 'typedi';
 import { toTitleCase } from '@/utils/functions';
-
 
 @Service()
 export class TagService {
+  public async getAllTag(pageNumber: number, status: number | null, search: string | null): Promise<PagenationTags> {
+    const whereCondition: any = {};
 
-    public async getAllTag(pageNumber: number): Promise<Tags[] | string> {
+    if (status !== null) {
+      whereCondition.record_status = status;
+    }
 
-        const offset = (pageNumber - 1) * 15;
+    if (search) {
+      whereCondition.title_en = { [Op.like]: `%${search}%` };
+    }
 
-        const getUserName = (field: string) =>
-            sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = TagModel.${field})`);
+    const countPerPage = 5;
 
-        const getStatusName = () =>
-            sequelize.literal(`
+    const totalCount = status !== null || search !== null ? await DB.Tag.count({ where: whereCondition }) : await DB.Tag.count();
+
+    const maxPages = Math.ceil(totalCount / countPerPage);
+
+    const offset = (pageNumber - 1) * countPerPage;
+
+    const getUserName = (field: string) => sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = TagModel.${field})`);
+
+    const getStatusName = () =>
+      sequelize.literal(`
                 CASE
                     WHEN TagModel.record_status = 1 THEN 'PENDING'
                     WHEN TagModel.record_status = 2 THEN 'ACTIVE'
@@ -28,49 +39,51 @@ export class TagService {
                     ELSE 'UNKNOWN'
                 END
             `);
-        
-        var allTag: Tags[] = await DB.Tag.findAll({
-            attributes: [
-                'id',
-                'title_en',
-                'title_ar',
-                [getStatusName(), 'status'],
-                [getUserName('created_by'), 'author'],
-                [getUserName('updated_by'), 'updatedBy'],
-                ['updated_on', "updatedOn"],
-                [getUserName('deleted_by'), 'deletedBy'],
-                ['deleted_on', "deletedOn"],
-            ],
-            where: {
-                record_status: 2,
-            },
-            raw: true,
-            offset,
-            limit: 15,
-        });
-        
-        allTag = allTag.map((tag) => ({
-            ...tag,
-            "title_en_case": toTitleCase(tag.title_en),
-            "title_ar_case": toTitleCase(tag.title_ar)
-        }));
 
-        return allTag.length ? allTag : "There are no Tags";
-    }
+    const allTag: Tags[] = await DB.Tag.findAll({
+      attributes: [
+        'id',
+        'title_en',
+        'title_ar',
+        'created_on',
+        [getStatusName(), 'status'],
+        [getUserName('created_by'), 'author'],
+        [getUserName('updated_by'), 'updatedBy'],
+        ['updated_on', 'updatedOn'],
+        [getUserName('deleted_by'), 'deletedBy'],
+        ['deleted_on', 'deletedOn'],
+      ],
+      where: whereCondition,
+      raw: true,
+      offset,
+      limit: countPerPage,
+    });
 
-    public async createNewTag(tag_data: CreateTagDto, user_id: number): Promise<Tags> {
+    return allTag.length
+      ? {
+          data: allTag,
+          countPerPage,
+          totalCount,
+          maxPages,
+        }
+      : {
+          data: 'Not Found',
+          countPerPage,
+          totalCount,
+          maxPages,
+        };
+  }
 
-        tag_data.title_en = tag_data.title_en.toLowerCase();
-        tag_data.title_ar = tag_data.title_ar.toLowerCase();
+  public async createNewTag(tag_data: CreateTagDto, user_id: number) {
+    tag_data.title_en = tag_data.title_en.toLowerCase();
+    tag_data.title_ar = tag_data.title_ar.toLowerCase();
 
-        const existingTag = await DB.Tag.findOne({
-            where: {
-                [Op.or]: [
-                    { title_en: tag_data.title_en },
-                    { title_ar: tag_data.title_ar }
-                ]
-            }
-        });
+    const existingTag = await DB.Tag.findOne({
+      raw: true,
+      where: {
+        [Op.or]: [{ title_en: tag_data.title_en }, { title_ar: tag_data.title_ar }],
+      },
+    });
 
         if (existingTag) {
             if (existingTag.title_en === tag_data.title_en) {
@@ -90,28 +103,26 @@ export class TagService {
         const tags: Tags[] = await DB.Tag.findAll({
             where: {
                 record_status: 2,
-            }
+            },
+            raw: true,
         });
 
         return tags;
     }
 
-    public async deleteTag(tag_id: number, user_id: number): Promise<Tags | string> {
+  public async deleteTag(tag_id: number, user_id: number): Promise<Tags | string> {
+    const checkOnTag: Tags = await DB.Tag.findByPk(tag_id);
 
-        const checkOnTag: Tags = await DB.Tag.findByPk(tag_id);
+    if (!checkOnTag) throw new HttpException(404, "Tag doesn't exist");
 
-        if (!checkOnTag)
-            throw new HttpException(404, "Tag doesn't exist");
-
-        if (checkOnTag.record_status === 3) {
-            throw new HttpException(404, "The Tag is already deleted");
-        }
-
-        await DB.Tag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { id: tag_id } })
-            .then(() => {
-                // Delete the 
-            });
-
-        return `The Tag has been deleted ID Tag ${tag_id}`;
+    if (checkOnTag.record_status === 3) {
+      throw new HttpException(404, 'The Tag is already deleted');
     }
+
+    await DB.Tag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { id: tag_id } }).then(async () => {
+      await DB.ArticleTag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { tag_id: tag_id } });
+    });
+
+    return `The Tag has been deleted ID Tag ${tag_id}`;
+  }
 }

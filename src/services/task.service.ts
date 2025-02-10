@@ -11,13 +11,11 @@ export class TaskService {
         const offset = (pageNumber - 1) * 5;
         const whereConditions: any = {};
 
-        // Filter based on existing conditions
         if (filters.agentId) whereConditions.assignee = filters.agentId;
         if (filters.taskType) whereConditions.type = filters.taskType;
         if (filters.status) whereConditions.status_id = filters.status;
         if (filters.startDate) whereConditions.created_at = { [Op.gte]: filters.startDate };
 
-        // Directly add Agent Name filter using a subquery
         if (filters.user_name) {
             whereConditions[Op.and] = sequelize.literal(`
                 TaskModel.assignee IN (
@@ -80,8 +78,6 @@ export class TaskService {
 
         return findAllTask;
     }
-
-
 
     public async fetchTaskCount(): Promise<number> {
         const countTask = await DB.Task.findAndCountAll({

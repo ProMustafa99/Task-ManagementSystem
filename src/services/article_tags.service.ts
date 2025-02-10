@@ -14,10 +14,10 @@ export class ArticleTagsService {
     public async getTagByArticleId(article_id: number, pageNumber: number): Promise<ArticleTagModel[] | string> {
 
         const existingArticle = await DB.Article.findOne({
-            where:{
-                [Op.and]:[
-                    {id:article_id},
-                    {record_status:2}
+            where: {
+                [Op.and]: [
+                    { id: article_id },
+                    { record_status: 2 }
                 ]
             }
         });
@@ -75,10 +75,10 @@ export class ArticleTagsService {
         });
 
         const checkOnTag = await DB.Tag.findOne({
-            where:{
-                [Op.and]:[
-                    {id:tag_id},
-                    {record_status:2}
+            where: {
+                [Op.and]: [
+                    { id: tag_id },
+                    { record_status: 2 }
                 ]
             }
         });
@@ -111,7 +111,7 @@ export class ArticleTagsService {
         const create_tagsforAtricle: ArticleTagModel = await DB.ArticleTag.create({ ...article_tag_data, created_by: user_id });
         return create_tagsforAtricle;
     }
-
+    
     public async deleteTagsFormArticle(article_id: number, tag_id: number, user_id: number): Promise<ArticleTagModel | string> {
 
 

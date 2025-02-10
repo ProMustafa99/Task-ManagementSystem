@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-import { CreateUserDto ,LoginDto } from '@dtos/users.dto';
+import { CreateUserDto, LoginDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { AuthService } from '@services/auth.service';
 
 export class AuthController {
-  
   public auth = Container.get(AuthService);
 
   public userByToken = async(req: RequestWithUser, res: Response, next: NextFunction) => {
@@ -27,8 +26,7 @@ export class AuthController {
       const signUpUserData: User = await this.auth.signup(userData);
 
       res.status(201).json({ data: signUpUserData, message: 'signup' });
-    }
-    catch (error) {
+    } catch (error) {
       next(error);
     }
   };
@@ -60,4 +58,15 @@ export class AuthController {
       next(error);
     }
   };
+
+  public userByToken = async(req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const permissions: Number[] = await this.auth.getUserPermissions(req.user.uid);
+      res.status(200).json({ ...req.user, permissions});
+      // res.status(200).json(req.user);
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 }

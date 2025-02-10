@@ -7,3 +7,6 @@ export interface Blog extends Record {
     url_en: string;
     url_ar: string;
 }
+
+
+
