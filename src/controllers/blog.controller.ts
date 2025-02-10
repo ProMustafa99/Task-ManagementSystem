@@ -173,22 +173,17 @@ export class BlogMangmentcotroller {
   };
 
   // Article Controller
+
   public getAllArticle = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filterArticle = this.Filter(req);
-      const page_number = Number(req.query.page) || 1;
-
-            if (page_number < 0 || page_number > 100000000000000000) {
-                res.status(400).json({ message: "Page number is irregular" })
-            } else {  
-          console.error('***********************************',filterArticle);
+      console.error('***********************************', filterArticle);
       const findAllArticle: PagenationArticle = await this.articleService.getAllArticl(
         filterArticle.page_number,
-            filterArticle.status,
+        filterArticle.status,
         filterArticle.search,
       );
       res.status(200).json(findAllArticle);
-            }
     } catch (error) {
       next(error);
     }

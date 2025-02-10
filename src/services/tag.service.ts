@@ -111,37 +111,35 @@ export class TagService {
         return tags;
     }
 
-  public async updateStatusTag(tag_id: number, user_id: number, newStatus: UpdateTagDto) {
+    public async updateStatusTag(tag_id: number, user_id: number, newStatus: UpdateTagDto) {
 
-    const checkOnTag: Tags = await DB.Tag.findByPk(tag_id);
-
-    if (!checkOnTag) throw new HttpException(404, "Tag doesn't exist");
-
-    if (checkOnTag.record_status === 3 && newStatus.record_status == 3) {
-      throw new HttpException(404, 'The Tag is already deleted');
+      const checkOnTag: Tags = await DB.Tag.findByPk(tag_id);
+  
+      if (!checkOnTag) throw new HttpException(404, "Tag doesn't exist");
+  
+      if (checkOnTag.record_status === 3 && newStatus.record_status == 3) {
+        throw new HttpException(404, 'The Tag is already deleted');
+      }
+  
+      const udpateArticle = await DB.Tag.update(
+        {
+          ...newStatus,
+          updated_by: newStatus.record_status !== 3 ? user_id : undefined,
+          updated_on: newStatus.record_status !== 3 ? new Date() : undefined,
+  
+          deleted_by: newStatus.record_status === 3 ? user_id : undefined,
+          deleted_on: newStatus.record_status === 3 ? new Date() : undefined,
+  
+        },
+        { where: { id: tag_id } },
+      );
+  
+      // await DB.Tag.update({ record_status: newStatus, deleted_by: user_id, deleted_on: new Date() }, { where: { id: tag_id } }).then(async () => {
+      //   await DB.ArticleTag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { tag_id: tag_id } });
+      // });
+  
+      return `The Tag has been updated ID Tag ${tag_id}`;
     }
-
-    const udpateArticle = await DB.Tag.update(
-      {
-        ...newStatus,
-        updated_by: newStatus.record_status !== 3 ? user_id : undefined,
-        updated_on: newStatus.record_status !== 3 ? new Date() : undefined,
-
-        deleted_by: newStatus.record_status === 3 ? user_id : undefined,
-        deleted_on: newStatus.record_status === 3 ? new Date() : undefined,
-
-      },
-      { where: { id: tag_id } },
-    );
-
-    // await DB.Tag.update({ record_status: newStatus, deleted_by: user_id, deleted_on: new Date() }, { where: { id: tag_id } }).then(async () => {
-    //   await DB.ArticleTag.update({ record_status: 3, deleted_by: user_id, deleted_on: new Date() }, { where: { tag_id: tag_id } });
-    // });
-
-    return `The Tag has been updated ID Tag ${tag_id}`;
-  }
-
-
 
   public async deleteTag(tag_id: number, user_id: number): Promise<Tags | string> {
     const checkOnTag: Tags = await DB.Tag.findByPk(tag_id);
