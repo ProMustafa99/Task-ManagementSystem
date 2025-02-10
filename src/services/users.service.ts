@@ -11,13 +11,13 @@ import { PagenationUsers } from '@/interfaces/pagenation.interface';
 @Service()
 export class UserService {
 
-  
+
   public async findAllUser(pageNumber: number, status: number | null, search: string | null,): Promise<PagenationUsers> {
 
     const whereCondition: any = {};
 
     if (status !== null) {
-      whereCondition.record_status = status;
+      whereCondition.status = status;
     }
 
     if (search) {
@@ -36,17 +36,17 @@ export class UserService {
     const allUser = await DB.Users.findAll({
       offset: offset,
       limit: countPerPage,
-      where:whereCondition
+      where: whereCondition
     });
 
     return allUser.length
-    ? {
+      ? {
         data: allUser,
         countPerPage,
         totalCount,
         maxPages,
       }
-    : {
+      : {
         data: 'Not Found',
         countPerPage,
         totalCount,
@@ -90,16 +90,35 @@ export class UserService {
 
   }
 
-  public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
+  public async updateUsers(userId: number, userData: CreateUserDto): Promise<User> {
     const findUser: User = await DB.Users.findByPk(userId);
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
-    const hashedPassword = await hash(userData.password, 10);
-    await DB.Users.update({ ...userData, password: hashedPassword }, { where: { uid: userId } });
+    if (userData.password) {
+      userData.password = await hash(userData.password, 10);
+    } else {
+      delete userData.password;
+    }
+
+    await DB.Users.update(userData, { where: { uid: userId } });
 
     const updateUser: User = await DB.Users.findByPk(userId);
     return updateUser;
   }
+
+  public async updateSettingUser(userId: number, userData: Partial<CreateUserDto>): Promise<User> {
+    const findUser = await DB.Users.findByPk(userId);
+    if (!findUser) throw new HttpException(409, "User doesn't exist");
+
+    if (userData.password) {
+        userData.password = await hash(userData.password, 10);
+    }
+
+    await DB.Users.update(userData, { where: { uid: userId } });
+
+    return await DB.Users.findByPk(userId);
+}
+
 
   public async deleteUser(userId: number): Promise<User> {
     const findUser: User = await DB.Users.findByPk(userId);

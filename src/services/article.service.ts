@@ -8,12 +8,11 @@ import { PagenationArticle } from '@/interfaces/pagenation.interface';
 
 @Service()
 export class ArticleService {
-  public async getAllArticl(
-    pageNumber: number,
-    status: number | null,
-    search: string | null,
-  ): Promise<PagenationArticle> {
-    
+  public async getAllArticl(pageNumber: number, status: number | null,search: string | null ): Promise<PagenationArticle> {
+
+    const countPerPage = 5;
+    const offset = (pageNumber - 1) * countPerPage;
+
     const whereCondition: any = {};
 
     if (status !== null) {
@@ -24,12 +23,11 @@ export class ArticleService {
       whereCondition.title_en = { [Op.like]: `%${search}%` };
     }
 
-    const countPerPage = 5;
+
     const totalCount = status !== null || search !==null ? await DB.Article.count({ where: whereCondition }) : await DB.Article.count();
 
     const maxPages = Math.ceil(totalCount / countPerPage);
     
-    const offset = (pageNumber - 1) * countPerPage;
 
     const getUserName = (field: string) => sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = ArticleModel.${field})`);
 

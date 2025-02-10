@@ -39,6 +39,7 @@ export class BlogMangmentcotroller {
   public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filterBlog = this.Filter(req);
+      console.error('Blog  Erro' ,filterBlog);
       const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
       res.status(200).json(findAllBlog);
     } catch (error) {
@@ -131,6 +132,7 @@ export class BlogMangmentcotroller {
   public getAllArticle = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filterArticle = this.Filter(req);
+      console.error('***********************************',filterArticle);
       const findAllArticle: PagenationArticle = await this.articleService.getAllArticl(
         filterArticle.page_number,
         filterArticle.status,

@@ -49,13 +49,12 @@ export class AuthController {
 
   public userByToken = async(req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
-
       const permissions: Number[] = await this.auth.getUserPermissions(req.user.uid);
-      
       res.status(200).json({ ...req.user, permissions});
       // res.status(200).json(req.user);
     } catch (error) {
       next(error);
     }
   }
+  
 }
