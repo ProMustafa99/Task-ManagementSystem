@@ -170,8 +170,7 @@ export class ArticleService {
       }
     }
 
-    const udpateArticle = await DB.Article.update(
-      {
+    const udpateArticle = await DB.Article.update( {
         ...article_data,
         updated_by: user_id,
         updated_on: new Date(),

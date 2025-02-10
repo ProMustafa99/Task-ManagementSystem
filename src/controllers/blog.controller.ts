@@ -1,7 +1,7 @@
 import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { CreateBlogDto, UpdateBlogDto } from '@/dtos/blog.dto';
-import { CreateTagDto } from '@/dtos/tag.dto';
+import { CreateTagDto, UpdateTagDto } from '@/dtos/tag.dto';
 import { Article } from '@/interfaces/article.interface';
 import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -39,7 +39,7 @@ export class BlogMangmentcotroller {
   public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filterBlog = this.Filter(req);
-      console.error('Blog  Erro' ,filterBlog);
+      console.error('Blog  Erro', filterBlog);
       const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
       res.status(200).json(findAllBlog);
     } catch (error) {
@@ -114,6 +114,21 @@ export class BlogMangmentcotroller {
     }
   };
 
+  public updateStatusTag = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const user_id = Number(req.user.uid);
+      const tag_id = Number(req.params.id);
+      const newStatus :UpdateTagDto = req.body;
+      const updateTag  = await this.tagService.updateStatusTag(tag_id, user_id ,newStatus);
+      res.status(200).json({ message: updateTag });
+      cache.flush();
+      filecache.flush();
+    } catch (error) {
+      next(error);
+      console.error(`Error ${error}`);
+    }
+  };
+
   public deleteTag = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const user_id = Number(req.user.uid);
@@ -132,7 +147,7 @@ export class BlogMangmentcotroller {
   public getAllArticle = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const filterArticle = this.Filter(req);
-      console.error('***********************************',filterArticle);
+      console.error('***********************************', filterArticle);
       const findAllArticle: PagenationArticle = await this.articleService.getAllArticl(
         filterArticle.page_number,
         filterArticle.status,
