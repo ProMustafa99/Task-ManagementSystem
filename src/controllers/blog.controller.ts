@@ -18,6 +18,8 @@ import { RelatedArticle } from '@/interfaces/related_article.interface';
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
 import filecache from '../utils/file_cach';
+import { Blog } from '@/interfaces/blog.interface';
+import { Tags } from '@/interfaces/tags.interface';
 
 export class BlogMangmentcotroller {
   public blogService = Container.get(BlogService);
@@ -109,13 +111,18 @@ export class BlogMangmentcotroller {
     public getAllTags = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
-            const page_number = Number(req.query.page) || 1;
 
-            if (page_number < 0 || page_number > 100000000000000000) {
+            const filterTags = this.Filter(req);
+
+            if (filterTags.page_number < 0 || filterTags.page_number > 100000000000000000) {
                 res.status(400).json({ message: "Page number is irregular" })
             } else {  
-                const findAlltags: Tags[] | string = await this.tagService.getAllTag(page_number);
-                res.status(200).json(findAlltags);
+              const findAllTags: PagenationTags = await this.tagService.getAllTag(
+                filterTags.page_number,
+                filterTags.status,
+                filterTags.search,
+              );
+                res.status(200).json(findAllTags);
             }
         }
         catch (error) {
@@ -353,7 +360,7 @@ export class BlogMangmentcotroller {
             //     });
             // }
 
-            const findArticle: ArticleAndPrevious | string = await this.search.SearchArticleById(article_id);
+            const findArticle: Article | string = await this.search.SearchArticleById(article_id);
 
       // filecache.set(cachekey, findArticle, 3600);
 

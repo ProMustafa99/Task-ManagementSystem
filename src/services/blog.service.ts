@@ -75,6 +75,21 @@ export class BlogService {
           totalCount,
           maxPages,
         };
+  }     
+   
+  public async getBlogByID(id: number): Promise<Blog | string> {
+      const blog: Blog = await DB.Blog.findOne({
+          where: {
+              id,
+              record_status: 2
+          },
+          raw: true
+      });
+
+      if (!blog)
+      throw new HttpException(404, "Blog doesn't exist");
+
+      return blog;
   }
 
   public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {
