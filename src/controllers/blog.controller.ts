@@ -334,7 +334,7 @@ export class BlogMangmentcotroller {
         try {
             const tags = await this.tagService.getActiveTags();
 
-            return res.status(200).json({message: 'Articles successfully fetched', data: tags})
+            return res.status(200).json(tags)
 
         } catch (err) {
             next(err);
