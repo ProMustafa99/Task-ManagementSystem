@@ -5,6 +5,8 @@ import sequelize, { Op, where } from 'sequelize';
 import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { ArticleTagModel } from '@/models/article_tags.model';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
+import { TagModel } from '@/models/tag.model';
+import { ArticleModel } from '@/models/article.model';
 
 @Service()
 export class ArticleTagsService {
@@ -97,7 +99,13 @@ export class ArticleTagsService {
             throw new HttpException(404, "Tag doesn't exist");
 
         if (checkArticleHasTag) {
-            throw new HttpException(404, "Article already has tag");
+            // throw new HttpException(404, "Article already has tag");
+            const tagForArticle = await DB.ArticleTag.update({
+                record_status: 2,
+            }, {where: {
+                id: checkArticleHasTag.id,
+            }});
+            return {...checkArticleHasTag, record_status: 2} as ArticleTagModel;
         }
 
         const create_tagsforAtricle: ArticleTagModel = await DB.ArticleTag.create({ ...article_tag_data, created_by: user_id });
@@ -107,16 +115,23 @@ export class ArticleTagsService {
     public async deleteTagsFormArticle(article_id: number, tag_id: number, user_id: number): Promise<ArticleTagModel | string> {
 
 
-        const existingArticle: ArticleTag = await DB.ArticleTag.findOne({
+        const existingArticle: ArticleModel = await DB.Article.findOne({
             where: {
-                article_id: article_id,
+                id: article_id,
             }
         });
-        const existingTag: ArticleTag = await DB.ArticleTag.findOne({
+        const existingTag: TagModel = await DB.Tag.findOne({
             where: {
-                tag_id: tag_id,
+                id: tag_id,
             }
         });
+
+        const existingArticleTag: ArticleTagModel = await DB.ArticleTag.findOne({
+            where: {
+                tag_id,
+                article_id
+            }
+        })
 
         if (!existingArticle)
             throw new HttpException(404, "Article doesn't exist");
@@ -124,7 +139,7 @@ export class ArticleTagsService {
         if (!existingTag)
             throw new HttpException(404, "Tag doesn't exist");
 
-        if (existingTag.record_status === 3) {
+        if (existingArticleTag.record_status === 3) {
             throw new HttpException(404, "The Tag is already deleted");
         }
 

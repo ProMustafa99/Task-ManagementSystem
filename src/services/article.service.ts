@@ -7,6 +7,8 @@ import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 import { Http } from 'winston/lib/winston/transports';
 import { Blog } from '@/interfaces/blog.interface';
 import { check } from 'prettier';
+import { ArticleWithTags, TagItem } from '@/interfaces/article_with_tags.interface';
+import { TagModel } from '@/models/tag.model';
 
 
 @Service()
@@ -54,7 +56,7 @@ export class ArticleService {
         return allArticle.length ? allArticle : "There are no Article";
     }
 
-    public async getArticlById(article_id: number): Promise<Article | string> {
+    public async getArticlById(article_id: number): Promise<ArticleWithTags | string> {
 
         const getUserName = (field: string) =>
             sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = ArticleModel.${field})`);
@@ -95,10 +97,38 @@ export class ArticleService {
             raw: true
         });
 
+        const articleTagIds = await DB.ArticleTag.findAll({
+            where: {
+                article_id,
+                record_status: 2
+            },
+            raw: true
+        });
+
+        console.log("\n\n\n\n\nArticle id: ", articleTagIds);
+
+        const articleTags : TagModel[] = await Promise.all(articleTagIds.map(tag => {
+            return DB.Tag.findOne({
+                attributes: [
+                    'title_en',
+                    'id'
+                ],
+                where: {
+                    id: tag.tag_id,
+                    record_status: 2
+                },
+                raw: true
+            })
+        }));
+
+        console.log("\n\n\n\n\nArticle id: ", articleTags);
+
+        const tags : TagItem[] = articleTags.map(tag => {return {label: tag.title_en, value: tag.id}});
+
         if (!allArticle) 
             throw new HttpException(404, "Article doesn't exist");
 
-        return allArticle;
+        return {...allArticle, tags};
     }
 
     public async createNewArticl(article_data: CreateArticleDto, user_id: number): Promise<Article> {
@@ -163,9 +193,6 @@ export class ArticleService {
                 throw new HttpException(409, 'An Article with the same URL (Arabic) already exists.');
             }
         }
-
-        console.log("\n\nArticle data: ", article_data);
-        console.log("User: ", user_id);
 
         const create_article: Article = await DB.Article.create({ ...article_data, in_links: inLinks, created_by: user_id });
         return create_article;
