@@ -1,7 +1,7 @@
 import { CreateArticleDto, UpdateArticleDto } from '@/dtos/article.dto';
 import { CreateArticleTagDto } from '@/dtos/article_tag.dto';
 import { CreateBlogDto, UpdateBlogDto } from '@/dtos/blog.dto';
-import { CreateTagDto } from '@/dtos/tag.dto';
+import { CreateTagDto, UpdateTagDto } from '@/dtos/tag.dto';
 import { Article } from '@/interfaces/article.interface';
 import { ArticleTag } from '@/interfaces/article_tag.interface';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -26,17 +26,6 @@ export class BlogMangmentcotroller {
   public articleTagsService = Container.get(ArticleTagsService);
   public search = Container.get(SearchArticleService);
 
-  private Filter(req: Request) {
-    const page_number = Number(req.query.page) || 1;
-    const status = Number(req.query.record_status) || null;
-    const search = typeof req.query.search === 'string' ? req.query.search : null;
-
-    return {
-      page_number,
-      status,
-      search,
-    };
-  }
     private Filter(req: Request) {
         const page_number = Number(req.query.page) || 1;
         const status = Number(req.query.record_status) || null;
@@ -49,16 +38,17 @@ export class BlogMangmentcotroller {
         };
       }
 
-    // Blog Controller
-    public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
-        try {
-          const filterBlog = this.Filter(req);
-          const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
-          res.status(200).json(findAllBlog);
-        } catch (error) {
-          next(error);
-        }
-      };
+  // Blog Controller
+  public getAllBlogs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const filterBlog = this.Filter(req);
+      
+      const findAllBlog: PagenationBlog = await this.blogService.getAllBlog(filterBlog.page_number, filterBlog.status, filterBlog.search);
+      res.status(200).json(findAllBlog);
+    } catch (error) {
+      next(error);
+    }
+  };
 
     public getBlogById = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -143,6 +133,21 @@ export class BlogMangmentcotroller {
       filecache.flush();
     } catch (error) {
       next(error);
+    }
+  };
+
+  public updateStatusTag = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const user_id = Number(req.user.uid);
+      const tag_id = Number(req.params.id);
+      const newStatus :UpdateTagDto = req.body;
+      const updateTag  = await this.tagService.updateStatusTag(tag_id, user_id ,newStatus);
+      res.status(200).json({ message: updateTag });
+      cache.flush();
+      filecache.flush();
+    } catch (error) {
+      next(error);
+      console.error(`Error ${error}`);
     }
   };
 

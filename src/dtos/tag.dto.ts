@@ -17,3 +17,11 @@ export class CreateTagDto {
     @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
     public record_status?: number;
 }
+
+
+export class UpdateTagDto {
+    @IsOptional()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    public record_status?: number;
+}

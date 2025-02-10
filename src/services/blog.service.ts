@@ -10,7 +10,7 @@ import { Service } from 'typedi';
 export class BlogService {
 
 
-  public async getAllBlog(pageNumber: number, status: number | null, search: string | null): Promise<PagenationBlog> {
+  public async getAllBlog(pageNumber: number, status: number | null, search: string | null  ): Promise<PagenationBlog> {
 
     const whereCondition: any = {};
 
@@ -25,11 +25,11 @@ export class BlogService {
     const countPerPage = 5;
 
     const totalCount = status !== null || search !== null ? await DB.Blog.count({ where: whereCondition }) : await DB.Blog.count();
-
+    
     const maxPages = Math.ceil(totalCount / countPerPage);
-
+    
     const offset = (pageNumber - 1) * countPerPage;
-
+    
     const getUserName = (field: string) => sequelize.literal(`(SELECT user_name FROM User WHERE User.uid = BlogModel.${field})`);
 
     const getStatusName = () =>
@@ -57,24 +57,24 @@ export class BlogService {
         [getUserName('deleted_by'), 'deletedBy'],
         ['deleted_on', 'deletedOn'],
       ],
-      where: whereCondition,
+      where :whereCondition,
       offset,
       limit: countPerPage,
     });
 
     return allBlog.length
       ? {
-        data: allBlog,
-        countPerPage,
-        totalCount,
-        maxPages,
-      }
+          data: allBlog,
+          countPerPage,
+          totalCount,
+          maxPages,
+        }
       : {
-        data: 'Not Found',
-        countPerPage,
-        totalCount,
-        maxPages,
-      };
+          data: 'Not Found',
+          countPerPage,
+          totalCount,
+          maxPages,
+        };
   }
 
   public async createNewBlog(blog_data: CreateBlogDto, user_id: number): Promise<Blog> {

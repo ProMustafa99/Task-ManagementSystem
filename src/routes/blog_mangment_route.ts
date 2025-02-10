@@ -50,6 +50,8 @@ export class BlogRoute implements Routes {
     this.router.get(`${this.pathTag}/active`, this.blogController.getActiveTags);
     this.router.post(this.pathTag, AuthMiddleware, Authorization(62), ValidationMiddleware(CreateTagDto), this.blogController.createNewbTag);
     this.router.delete(`${this.pathTag}/${ID_PARAM}`, AuthMiddleware, Authorization(63), this.blogController.deleteTag);
+    this.router.put(`${this.pathTag}/${ID_PARAM}`, AuthMiddleware, Authorization(63), this.blogController.updateStatusTag);
+    //updateStatusTag
   }
 
   private initializeArticleRoutes(): void {
