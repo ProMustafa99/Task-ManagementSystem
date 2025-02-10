@@ -76,12 +76,11 @@ export class BlogService {
           maxPages,
         };
   }     
-   
+
   public async getBlogByID(id: number): Promise<Blog | string> {
       const blog: Blog = await DB.Blog.findOne({
           where: {
               id,
-              record_status: 2
           },
           raw: true
       });
@@ -150,8 +149,6 @@ export class BlogService {
         { record_status: blog_data.record_status, updated_by: user_id, updated_on: new Date() },
         { where: { blog_id: blog_id } }
       );
-
-      console.log("\n\n\n\nThis is us here: ", res);
     } else if (blog_data.record_status === 3) {
       throw new HttpException(400, "Can't delete blog by updating it");
     }
