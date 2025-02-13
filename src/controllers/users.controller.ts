@@ -4,10 +4,11 @@ import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import { UserService } from '@services/users.service';
 import { PagenationUsers } from '@/interfaces/pagenation.interface';
+import { AuthService } from '@/services/auth.service';
 
 export class UserController {
   public user = Container.get(UserService);
-
+  public auth = Container.get(AuthService);
 
   private Filter(req: Request) {
     const page_number = Number(req.query.page) || 1;
@@ -43,10 +44,9 @@ export class UserController {
     try {
       const userId = Number(req.params.id);
       const findOneUserData: User = await this.user.findUserById(userId);
+      const permissions: Number[] = await this.auth.getUserPermissions(userId);
 
-      console.log("his user: ", findOneUserData);
-
-      res.status(200).json({ ...findOneUserData, message: 'findOne' });
+      res.status(200).json({ ...findOneUserData, permissions, message: 'findOne' });
     } catch (error) {
       next(error);
     }

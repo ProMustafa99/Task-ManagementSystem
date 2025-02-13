@@ -23,6 +23,15 @@ export class userPermissionService {
     }
 
     public async deleteUserPermission(permission: number, user_id: number) {
+        const permissionToD = await DB.UserPermission.findOne({
+            where: {
+                user_id,
+                id_permission: permission,
+            }
+        })
+        
+        console.log(permissionToD);
+
         const deletePermission = await DB.UserPermission.destroy({
                 where: {
                     user_id,

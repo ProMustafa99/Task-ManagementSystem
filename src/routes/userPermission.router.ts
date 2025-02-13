@@ -18,7 +18,7 @@ export class UserPermissionRoute implements Routes {
       this.router.get(`${this.path}`,this.permission.getPermissionForAllUser);
       this.router.get(`${this.path}/names`,this.permission.getPermissionNames);
       this.router.post(`${this.path}`, AuthMiddleware, Authorization(100), ValidationMiddleware(CreateUserPermissionDto), this.permission.createUserPermission);
-      this.router.post(`${this.path}/:permission_id/user/:user_id`, AuthMiddleware, Authorization(100), this.permission.deleteUserPermission);
+      this.router.delete(`${this.path}/:permission_id/user/:user_id`, AuthMiddleware, Authorization(100), this.permission.deleteUserPermission);
     }
   }
   

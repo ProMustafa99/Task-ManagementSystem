@@ -5,8 +5,7 @@ export class CreateUserPermissionDto {
     @IsNotEmpty({ message: "Permissions cannot be empty"})
     public permission: number;
 
-    @IsString({ message: 'Title in Arabic must be a valid string.' })
-    @IsNotEmpty({ message: 'Title in Arabic is required.' })
-    @MaxLength(255, { message: 'Title in Arabic should not exceed 255 characters.' })
+    @IsInt({ message: "User id needs to be a number"})
+    @IsNotEmpty({ message: 'User id is required.' })
     public user_id: number;
 }

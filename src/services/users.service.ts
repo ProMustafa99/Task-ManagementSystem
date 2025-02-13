@@ -56,7 +56,7 @@ export class UserService {
 
   public async findUserById(userId: number): Promise<User> {
     const findUser: User = await DB.Users.findByPk(userId, {raw: true});
-    if (!findUser) throw new HttpException(409, "User doesn't exist");
+    if (!findUser) throw new HttpException(404, "User doesn't exist");
 
     return {...findUser, password: ''};
   }
@@ -68,7 +68,7 @@ export class UserService {
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await DB.Users.create({ ...userData, password: hashedPassword });
+    const createUserData: User = await DB.Users.create({ ...userData, password: hashedPassword }, {raw: true});
 
     if (createUserData.user_type != 2) {
       await taskService.createNewTask(3, createUserData, "User");

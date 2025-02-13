@@ -43,7 +43,8 @@ export class userPermissionController {
 
     public deleteUserPermission = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {user_id, permission_id} = req.params;
+            const user_id = req.params.user_id;
+            const permission_id = req.params.permission_id;
 
             const result = await this.userPermission.deleteUserPermission(Number(permission_id), Number(user_id));
 
