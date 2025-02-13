@@ -58,6 +58,7 @@ export class BlogService {
         ['deleted_on', 'deletedOn'],
       ],
       where :whereCondition,
+      raw: true,
       offset,
       limit: countPerPage,
     });

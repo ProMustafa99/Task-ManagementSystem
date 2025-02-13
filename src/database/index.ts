@@ -11,6 +11,7 @@ import BlogModel from '@/models/blog.model';
 import TagModel from '@/models/tag.model';
 import ArticleModel from '@/models/article.model';
 import  ArticleTagModel  from '@/models/article_tags.model';
+import PermissionModel from '@/models/permission.model';
 
 
 const sequelize = new Sequelize.Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
@@ -41,6 +42,7 @@ export const DB = {
   Users: UserModel(sequelize),
   Posts: PostModel(sequelize),
   UserPermission: UserPermissionModel(sequelize),
+  Permission: PermissionModel(sequelize),
   TaskType: TaskTypeModel(sequelize),
   Task: TaskModel(sequelize),
   Blog: BlogModel(sequelize),

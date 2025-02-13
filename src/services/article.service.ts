@@ -118,6 +118,7 @@ export class ArticleService {
                 'cover_image_url',
                 'blog_id',
                 [getBlogName('blog_id'), "blog_name"],
+                'record_status',
                 [getStatusName(), 'status'],
                 [getUserName('created_by'), 'author'],
                 [getUserName('updated_by'), 'updatedBy'],
@@ -222,7 +223,7 @@ export class ArticleService {
       }
     }
 
-        const create_article: Article = await DB.Article.create({ ...article_data, in_links: inLinks, created_by: user_id });
+        const create_article: Article = await DB.Article.create({ ...article_data, in_links: inLinks, created_by: user_id }, { raw: true });
         return create_article;
     }
 
@@ -266,13 +267,14 @@ export class ArticleService {
         var inLinks = {};
 
         if (article_data.in_links) {
-
+            if (matches_en && matches_en.length > 0)
             matches_en.map((match) => {
                 if (article_data.in_links[match]) {
                     inLinks[match] = article_data.in_links[match]
                 }
             });
-            
+
+            if (matches_ar && matches_ar.length > 0)
             matches_ar.map((match) => {
                 if (article_data.in_links[match]) {
                     inLinks[match] = article_data.in_links[match]

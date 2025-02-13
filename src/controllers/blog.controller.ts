@@ -217,6 +217,9 @@ export class BlogMangmentcotroller {
   public updateArticle = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const article_data: UpdateArticleDto = req.body;
+
+      console.log('\n\n\n\n\nArticle data: ', article_data);
+
       const user_id = Number(req.user.uid);
       const article_id = Number(req.params.id);
       const udpateArticle = await this.articleService.upddateArtilce(article_id, article_data, user_id);

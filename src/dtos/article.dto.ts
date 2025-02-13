@@ -62,6 +62,10 @@ export class CreateArticleDto {
     @IsObject({ each: true, message: 'Each in link should be an object.' })
     public related_links?: any;
 
+    @IsOptional()
+    @IsNumber()
+    public record_status?: any;
+
     @IsUrl({}, { message: 'Cover image URL must be a valid URL.' })
     @IsNotEmpty({ message: 'Cover image URL is required.' })
     public cover_image_url: string;

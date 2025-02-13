@@ -23,6 +23,11 @@ export class CreateBlogDto {
     @MaxLength(255, { message: 'URL in Arabic should not exceed 255 characters.' })
     @Validate(IsUrlOrPathConstraint, { message: 'The Arabic URL must be a valid url or relative path'})
     public url_ar: string;
+
+    @IsOptional()
+    @IsNumber({}, { message: 'Record status must be a valid number.' })
+    @IsIn([1,2,3], { message: 'Record status must be one of the following values: 1, 2, or 3.' })
+    public record_status?: number;
 }
 
 
